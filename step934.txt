@@ -1,0 +1,35 @@
+﻿àº‚à»‰àº²àºžàº°à»€àºˆàº»à»‰àº²à»„àº”à»‰àº”àº³à»€àº™àºµàº™àºàº²àº™àºžàº±àº”àº—àº°àº™àº² **Module 2 (àºžàº°à»àº™àºàº™àº´àº•àº´àºàº³ à»àº¥àº° à»àºà»‰à»„àº‚àº‚à»à»‰àº‚àº±àº”à»àºà»ˆàº‡ - Legal Affairs & Dispute Resolution Division)** àº„àº»àºšàº–à»‰àº§àº™àº—àº±àº‡ 2 àº¥àº°àºšàº»àºšàºà»ˆàº­àºàº®àº½àºšàº®à»‰àº­àºà»àº¥à»‰àº§:
+
+---
+
+### ðŸ“‚ àºžàº²àºàºªà»ˆàº§àº™ A: àº¥àº°àºšàº»àºšàº„àº¸à»‰àº¡àº„àº­àº‡àº™àº´àº•àº´àºàº³ à»àº¥àº° àº¥àº°àºšàº½àºšàºàº²àº™ (`/legal-documents`)
+
+1. **à»œà»‰àº²àº¥àº²àºàºàº²àº™àº™àº´àº•àº´àºàº³ & àº•àº²àº•àº°àº¥àº²àº‡àº‚à»à»‰àº¡àº¹àº™ ([`documents-list-view.tsx`](file:///d:/SM/Project/frontend/legal-contract/legal-contract-frontend/src/modules/legal-disputes/components/documents/documents-list-view.tsx) & [`/legal-documents`](file:///d:/SM/Project/frontend/legal-contract/legal-contract-frontend/src/app/(dashboard)/legal-documents/page.tsx))**:
+   - **àº•àº»àº§àºàº±à»ˆàº™àº•àº­àº‡àº„àº»àºšàºŠàº¸àº” ([`document-filters-bar.tsx`](file:///d:/SM/Project/frontend/legal-contract/legal-contract-frontend/src/modules/legal-disputes/components/documents/document-filters-bar.tsx))**:
+     - àºŠà»ˆàº­àº‡àº„àº»à»‰àº™àº«àº² (àº«àº»àº§àº‚à»à»‰, à»€àº¥àºàº—àºµ, àºœàº¹à»‰àº®àº±àºšàºœàº´àº”àºŠàº­àºš).
+     - à»€àº¥àº·àº­àº 7 àº›àº°à»€àºžàº”àº™àº´àº•àº´àºàº³ (`REGULATION`, `PROVISION`, `AGREEMENT`, `NOTICE`, `MANUAL`, `CONTRACT`, `OTHER`).
+     - à»€àº¥àº·àº­àºàº«à»‰àº­àº‡àºàº²àº™/àºà»ˆàº²àº (àº”àº¶àº‡ master data 17 àºà»ˆàº²àºàºˆàº²àº API `/departments`).
+     - àºàº±à»ˆàº™àº•àº­àº‡àº•àº²àº¡àº›àºµàº­àº­àºàº™àº´àº•àº´àºàº³ (`issueYear`) à»àº¥àº° àºªàº°àº–àº²àº™àº° (`ACTIVE` / `INACTIVE`).
+   - **àº•àº²àº•àº°àº¥àº²àº‡àº‚à»à»‰àº¡àº¹àº™ ([`document-table.tsx`](file:///d:/SM/Project/frontend/legal-contract/legal-contract-frontend/src/modules/legal-disputes/components/documents/document-table.tsx))**:
+     - àºªàº°à»àº”àº‡àº«àº»àº§àº‚à»à»‰, à»€àº¥àºàº—àºµ/àº§àº±àº™àº—àºµàº­àº­àºàº™àº´àº•àº´àºàº³, àº›àº°à»€àºžàº”àº™àº´àº•àº´àºàº³ ([`DocumentTypeBadge`](file:///d:/SM/Project/fron
+<truncated 6982 bytes>
+àº²àº™àºªàº³àº™àº§àº™àº„àº°àº”àºµ ([`case-attachments-card.tsx`](file:///d:/SM/Project/frontend/legal-contract/legal-contract-frontend/src/modules/legal-disputes/components/cases/case-attachments-card.tsx)) à»€àº›àºµàº”à»€àºšàº´à»ˆàº‡/àº”àº²àº§à»‚àº«àº¼àº”/àº­àº±àºšà»‚àº«àº¼àº”à»€àºžàºµà»ˆàº¡.
+   - Dialog àº¢àº·àº™àº¢àº±àº™àºàº²àº™àº¥àº»àºšàºªàº³àº™àº§àº™àº„àº°àº”àºµ ([`delete-case-dialog.tsx`](file:///d:/SM/Project/frontend/legal-contract/legal-contract-frontend/src/modules/legal-disputes/components/cases/delete-case-dialog.tsx)).
+
+---
+
+### ðŸš€ àºàº²àº™àºàº§àº”àºªàº­àºšàº¥àº°àºšàº»àºš (Build & TypeScript Verification):
+- **TypeScript**: `npx tsc --noEmit` àºœà»ˆàº²àº™ 100% à»‚àº”àºàºšà»à»ˆàº¡àºµ error.
+- **Next.js Production Build**: `npm run build` àºªàº³à»€àº¥àº±àº”àº—àº±àº‡ **20 Routes** (Static & Partial Prerender).
+
+---
+
+### ðŸ“Œ àºžàº²àºšàº¥àº§àº¡àº‚àº­àº‡àº¥àº°àºšàº»àºšà»ƒàº™àº›àº°àºˆàº¸àºšàº±àº™:
+1. **Module 1: àºžàº°à»àº™àºàºªàº±àº™àºàº²àº—àº»à»ˆàº§à»„àº›** (`/contracts`, `/contracts/dashboard`, `/contracts/create`, `/contracts/[id]`, `/contracts/[id]/edit`) âœ…
+2. **Module 2: àºžàº°à»àº™àºàº™àº´àº•àº´àºàº³ à»àº¥àº° à»àºà»‰à»„àº‚àº‚à»à»‰àº‚àº±àº”à»àºà»ˆàº‡**:
+   - àº™àº´àº•àº´àºàº³ & àº¥àº°àºšàº½àºšàºàº²àº™ (`/legal-documents`, `/legal-documents/create`, `/legal-documents/[id]`, `/legal-documents/[id]/edit`) âœ…
+   - àºªàº³àº™àº§àº™àº„àº°àº”àºµ & àº‚à»à»‰àº‚àº±àº”à»àºà»ˆàº‡ (`/legal-cases`, `/legal-cases/create`, `/legal-cases/[id]`, `/legal-cases/[id]/edit`) âœ…
+3. **àº¥àº°àºšàº»àºšàºšà»àº¥àº´àº«àº²àº™àºœàº¹à»‰à»ƒàºŠà»‰ & àºªàº´àº”àº—àº´** (`/users`) âœ…
+4. **à»œà»‰àº² Overview Dashboard àº¥àº§àº¡** (`/dashboard`) âœ…
+
+**àº‚àº±à»‰àº™àº•àº­àº™àº•à»à»ˆà»„àº› àº—à»ˆàº²àº™àº•à»‰àº­àº‡àºàº²àº™à»ƒàº«à»‰à»€àºªàºµàº¡à»œà»‰àº² Dashboard àºªàº°àº–àº´àº•àº´àºªàº°à»€àºžàº²àº°àº‚àº­àº‡àº™àº´àº•àº´àºàº³ (`/legal-documents/dashboard`) à»àº¥àº° àº„àº°àº”àºµ (`/legal-cases/dashboard`) àº«àº¼àº· àº•à»‰àº­àº‡àºàº²àº™àº—àº»àº”àºªàº­àºšàºªà»ˆàº§àº™à»ƒàº”à»€àºžàºµà»ˆàº¡à»€àº•àºµàº¡àºšà»à»ˆ?**

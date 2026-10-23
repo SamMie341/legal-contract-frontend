@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Font Family Definition: English (Fira Code) + Lao (Noto Sans Lao) */
+  --font-family-base: var(--font-fira-code), var(--font-noto-sans-lao), sans-serif;
+
+  /* System Base Palette */
+  --background: #f0f2f5;
+  --foreground: #1e293b;
+  --surface: #fafafa;
+  --surface-hover: #f1f5f9;
+  --border: #e2e8f0;
+
+  /* Primary Brand - EDL Legal Navy */
+  --primary: #162456;
+  --primary-hover: #1d2f6f;
+  --primary-active: #101b42;
+  --primary-light: #e8ecf8;
+
+  /* Typography */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Semantic Feedback */
+  --success: #10b981;
+  --success-bg: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-bg: #fffbeb;
+  --danger: #ef4444;
+  --danger-bg: #fef2f2;
+  --info: #0284c7;
+  --info-bg: #f0f9ff;
+
+  /* Contract Status Badges */
+  --status-draft: #64748b;
+  --status-draft-bg: #f1f5f9;
+  --status-active: #10b981;
+  --status-active-bg: #ecfdf5;
+  --status-expiring: #f59e0b;
+  --status-expiring-bg: #fffbeb;
+  --status-expired: #ef4444;
+  --status-expired-bg: #fef2f2;
+  --status-terminated: #475569;
+  --status-terminated-bg: #f8fafc;
+
+  /* Dispute Status Badges */
+  --dispute-first: #3b82f6;
+  --dispute-first-bg: #eff6ff;
+  --dispute-appeal: #8b5cf6;
+  --dispute-appeal-bg: #f5f3ff;
+  --dispute-supreme: #f97316;
+  --dispute-supreme-bg: #fff7ed;
+  --dispute-resolved: #059669;
+  --dispute-resolved-bg: #ecfdf5;
+  --dispute-closed: #64748b;
+  --dispute-closed-bg: #f1f5f9;
+
+  /* Currency Badges */
+  --currency-lak: #0284c7;
+  --currency-lak-bg: #f0f9ff;
+  --currency-usd: #059669;
+  --currency-usd-bg: #ecfdf5;
+  --currency-cny: #dc2626;
+  --currency-cny-bg: #fef2f2;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  /* Typography Families */
+  --font-mono: var(--font-fira-code), var(--font-noto-sans-lao), monospace;
+  --font-sans: var(--font-fira-code), var(--font-noto-sans-lao), sans-serif;
+  --font-serif: var(--font-fira-code), var(--font-noto-sans-lao), serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Brand Colors */
+  --color-primary: #162456;
+  --color-primary-hover: #1d2f6f;
+  --color-primary-active: #101b42;
+  --color-primary-light: #e8ecf8;
+
+  /* Surfaces & Background */
+  --color-background-base: #f0f2f5;
+  --color-surface: #fafafa;
+  --color-surface-hover: #f1f5f9;
+  --color-border-line: #e2e8f0;
+
+  /* Typography */
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+
+  /* Semantic Feedback */
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fffbeb;
+  --color-danger: #ef4444;
+  --color-danger-bg: #fef2f2;
+  --color-info: #0284c7;
+  --color-info-bg: #f0f9ff;
+
+  /* Contract Status Colors */
+  --color-status-draft: #64748b;
+  --color-status-draft-bg: #f1f5f9;
+  --color-status-active: #10b981;
+  --color-status-active-bg: #ecfdf5;
+  --color-status-expiring: #f59e0b;
+  --color-status-expiring-bg: #fffbeb;
+  --color-status-expired: #ef4444;
+  --color-status-expired-bg: #fef2f2;
+  --color-status-terminated: #475569;
+  --color-status-terminated-bg: #f8fafc;
+
+  /* Dispute Status Colors */
+  --color-dispute-first: #3b82f6;
+  --color-dispute-first-bg: #eff6ff;
+  --color-dispute-appeal: #8b5cf6;
+  --color-dispute-appeal-bg: #f5f3ff;
+  --color-dispute-supreme: #f97316;
+  --color-dispute-supreme-bg: #fff7ed;
+  --color-dispute-resolved: #059669;
+  --color-dispute-resolved-bg: #ecfdf5;
+  --color-dispute-closed: #64748b;
+  --color-dispute-closed-bg: #f1f5f9;
+
+  /* Currency Colors */
+  --color-currency-lak: #0284c7;
+  --color-currency-lak-bg: #f0f9ff;
+  --color-currency-usd: #059669;
+  --color-currency-usd-bg: #ecfdf5;
+  --color-currency-cny: #dc2626;
+  --color-currency-cny-bg: #fef2f2;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-fira-code), var(--font-noto-sans-lao), sans-serif;
+  min-height: 100vh;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+/* Toast typography (Sonner) */
+[data-sonner-toaster],
+[data-sonner-toast],
+[data-sonner-toast] * {
+  font-family: var(--font-fira-code), var(--font-noto-sans-lao), sans-serif !important;
 }
