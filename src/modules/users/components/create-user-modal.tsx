@@ -95,13 +95,17 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
     e.preventDefault();
     if (!empCode.trim()) return;
 
-    await createUserMutation.mutateAsync({
-      employeeCode: empCode.trim(),
-      role,
-      ...permissions,
-    });
+    try {
+      await createUserMutation.mutateAsync({
+        employeeCode: empCode.trim(),
+        role,
+        ...permissions,
+      });
 
-    handleClose();
+      handleClose();
+    } catch {
+      // Error is caught and displayed by useCreateUser onError toast
+    }
   };
 
   const handleClose = () => {

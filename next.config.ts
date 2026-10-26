@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+const backendApiUrl =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ||
+  'https://likely-ecology-refused-letters.trycloudflare.com/api';
+
 const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
@@ -20,7 +24,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:3001/api/:path*',
+        destination: `${backendApiUrl}/:path*`,
       },
     ];
   },

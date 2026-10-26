@@ -49,8 +49,22 @@ function createHttpClient(): AxiosInstance {
 
       const normalized = normalizeError(error);
 
-      // Handle 401 Unauthorized - auto clean up session
-      if (normalized.statusCode === 401 && typeof window !== 'undefined') {
+      // Handle 401 Unauthorized - auto clean up session ONLY when it's our session that expired
+      // Do not clear session if the 401 is from external HRM lookup or an auth login endpoint
+      const reqUrl = error.config?.url || '';
+      const isAuthEndpoint = reqUrl.includes('/auth/login') || reqUrl.includes('/auth/hrm-login');
+      const isHrmLookup = reqUrl.includes('/users/hrm/');
+      const isHrmError =
+        typeof normalized.message === 'string' &&
+        normalized.message.toLowerCase().includes('hrm');
+
+      if (
+        normalized.statusCode === 401 &&
+        typeof window !== 'undefined' &&
+        !isAuthEndpoint &&
+        !isHrmLookup &&
+        !isHrmError
+      ) {
         TokenStorage.clearSession();
         // Redirect to login if not already there
         if (!window.location.pathname.includes('/login')) {
