@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Briefcase,
   FileText,
@@ -20,8 +21,15 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Welcome Banner */}
       <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-primary to-[#1d2f6f] text-white shadow-lg relative overflow-hidden">
-        <div className="absolute right-0 bottom-0 opacity-10 translate-x-10 translate-y-10">
-          <span className="text-[180px] font-black leading-none">⚡</span>
+        {/* Faded Background Logo Watermark */}
+        <div className="absolute -right-8 -bottom-10 w-72 h-72 sm:w-80 sm:h-80 opacity-15 pointer-events-none select-none z-0">
+          <Image
+            src="/edl-logo.png"
+            alt="EDL Logo Watermark"
+            fill
+            className="object-contain"
+            priority
+          />
         </div>
 
         <div className="relative z-10 max-w-2xl">
@@ -38,7 +46,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 2 Core Divisions Cards */}
+      {/* 2 Core Divisions Cards (2 ພະແນກຫຼັກ) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Division 1: General Contracts */}
         <div className="p-6 rounded-2xl bg-surface border border-border-line hover:shadow-md transition-shadow flex flex-col justify-between">

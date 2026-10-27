@@ -15,11 +15,18 @@ export interface HrmEmployeeLookup {
 export interface CreateUserPayload extends Partial<UserPermissions> {
   employeeCode: string;
   role?: UserRole;
+  division?: string;
+  department?: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface UpdateUserPayload extends Partial<UserPermissions> {
   role?: UserRole;
   isActive?: boolean;
+  division?: string;
+  department?: string;
 }
 
 export interface UserQueryParams {

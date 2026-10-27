@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { FileText, Scale, ShieldCheck, Briefcase } from 'lucide-react';
 
 export function LoginBrandHero() {
@@ -9,11 +10,29 @@ export function LoginBrandHero() {
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary-hover rounded-full blur-3xl opacity-30" />
       <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20" />
 
+      {/* Large Faded EDL Logo Watermark in Hero Background */}
+      <div className="absolute -right-20 -bottom-20 w-[540px] h-[540px] opacity-[0.09] pointer-events-none select-none z-0">
+        <Image
+          src="/edl-logo.png"
+          alt="EDL Watermark"
+          fill
+          className="object-contain"
+          priority
+        />
+      </div>
+
       {/* Top Header / Branding */}
       <div className="relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center font-bold text-xl text-yellow-400 shadow-inner">
-            ⚡
+          <div className="w-12 h-12 rounded-xl bg-white p-1.5 shadow-md flex items-center justify-center shrink-0 border border-white/20">
+            <Image
+              src="/edl-logo.png"
+              alt="EDL Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+              priority
+            />
           </div>
           <div>
             <h2 className="text-xl font-bold tracking-tight text-white">

@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const backendApiUrl =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ||
-  'https://likely-ecology-refused-letters.trycloudflare.com/api';
+  'http://localhost:3001/api';
 
 const nextConfig: NextConfig = {
   /* config options here */

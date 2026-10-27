@@ -8,9 +8,9 @@ import {
   History,
   FilePlus,
   ClockAlert,
-  FolderOpen,
 } from 'lucide-react';
-import { UserPermissions, UserRole } from '@core/entities';
+import { UserPermissions } from '@core/entities';
+import { DivisionAccessKey } from '@/presentation/hooks';
 
 export interface NavItem {
   title: string;
@@ -27,6 +27,7 @@ export interface NavGroup {
   groupName: string;
   groupNameEn: string;
   adminOnly?: boolean;
+  divisionKey?: DivisionAccessKey;
   items: NavItem[];
 }
 
@@ -46,6 +47,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     groupName: '1. ພະແນກສັນຍາທົ່ວໄປ',
     groupNameEn: 'General Contracts Division',
+    divisionKey: 'CONTRACTS',
     items: [
       {
         title: 'ສະຖິຕິສັນຍາ (Dashboard)',
@@ -78,6 +80,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     groupName: '2. ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ',
     groupNameEn: 'Legal Affairs & Dispute Resolution Division',
+    divisionKey: 'LEGAL_AND_DISPUTE',
     items: [
       {
         title: 'ສະຖິຕິນິຕິກຳ (Dashboard)',
@@ -91,15 +94,8 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         href: '/legal-documents',
         icon: FileText,
       },
-      // {
-      //   title: 'ເພີ່ມເອກະສານນິຕິກຳໃໝ່',
-      //   titleEn: 'New Legal Document',
-      //   href: '/legal-documents/create',
-      //   icon: FilePlus,
-      //   requiredPermission: 'canUpload',
-      // },
       {
-        title: 'ສະຖິຕິຄະດີ  Dashboard',
+        title: 'ສະຖິຕິຄະດີ (Dashboard)',
         titleEn: 'Cases Dashboard',
         href: '/legal-cases/dashboard',
         icon: LayoutDashboard,
@@ -110,13 +106,6 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         href: '/legal-cases',
         icon: Scale,
       },
-      // {
-      //   title: 'ສ້າງສຳນວນຄະດີໃໝ່',
-      //   titleEn: 'New Case File',
-      //   href: '/legal-cases/create',
-      //   icon: FolderOpen,
-      //   requiredPermission: 'canUpload',
-      // },
     ],
   },
   {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Menu,
@@ -43,7 +44,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 sm:px-6 bg-surface border-b border-border-line shadow-xs">
       {/* Left: Mobile Toggle & Page Title */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5 sm:gap-3">
         <button
           type="button"
           onClick={onOpenSidebar}
@@ -51,6 +52,16 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        <div className="w-8 h-8 rounded-lg bg-white p-0.5 border border-border-line flex items-center justify-center shrink-0 lg:hidden shadow-2xs">
+          <Image
+            src="/edl-logo.png"
+            alt="EDL"
+            width={26}
+            height={26}
+            className="object-contain"
+          />
+        </div>
 
         <div>
           <h2 className="text-sm sm:text-base font-bold text-text-primary tracking-tight">

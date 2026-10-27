@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Shield, Loader2, CheckCircle2 } from 'lucide-react';
 import { User, UserRole, UserPermissions } from '@core/entities';
+import { DIVISION_OPTIONS } from '@core/constants';
 import { useUpdateUser } from '../hooks/use-users';
 import { PermissionCheckboxGroup } from './permission-checkbox-group';
 
@@ -50,6 +51,7 @@ export function EditPermissionsModal({
 }: EditPermissionsModalProps) {
   const [role, setRole] = useState<UserRole>(UserRole.VIEWER);
   const [isActive, setIsActive] = useState<boolean>(true);
+  const [division, setDivision] = useState<string>('');
   const [permissions, setPermissions] = useState<UserPermissions>({
     canView: true,
     canUpload: false,
@@ -64,6 +66,7 @@ export function EditPermissionsModal({
     if (user) {
       setRole(user.role);
       setIsActive(user.isActive !== false);
+      setDivision(user.division || '');
       setPermissions({
         canView: Boolean(user.canView),
         canUpload: Boolean(user.canUpload),
@@ -89,6 +92,7 @@ export function EditPermissionsModal({
       payload: {
         role,
         isActive,
+        division,
         ...permissions,
       },
     });
@@ -154,6 +158,28 @@ export function EditPermissionsModal({
                 className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
               />
             </label>
+          </div>
+
+          {/* Division Selection (3 Core Pillars) */}
+          <div>
+            <label className="block text-xs font-bold text-text-primary mb-1.5">
+              ສັງກັດພະແນກ (Division)
+            </label>
+            <select
+              value={division}
+              onChange={(e) => setDivision(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-white border border-border-line rounded-xl text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              <option value="">-- ດຶງຕາມ HRM ຫຼື ບໍ່ລະບຸ --</option>
+              {DIVISION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-text-muted mt-1">
+              ສິດທິການເຫັນໂມດູນສັນຍາ, ນິຕິກຳ ຫຼື ຄະດີ ຈະຖືກແຍກຕາມພະແນກທີ່ເລືອກ
+            </p>
           </div>
 
           {/* Role Selection */}

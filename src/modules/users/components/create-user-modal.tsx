@@ -12,6 +12,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { UserRole, UserPermissions } from '@core/entities';
+import { DIVISION_OPTIONS } from '@core/constants';
 import { usersApi } from '../api/users.api';
 import { HrmEmployeeLookup } from '../types/user-management.types';
 import { useCreateUser } from '../hooks/use-users';
@@ -56,6 +57,8 @@ const ROLE_PRESETS: Record<UserRole, UserPermissions> = {
 
 export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
   const [empCode, setEmpCode] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [division, setDivision] = useState('');
   const [isSearchingHrm, setIsSearchingHrm] = useState(false);
   const [hrmResult, setHrmResult] = useState<HrmEmployeeLookup | null>(null);
   const [hrmError, setHrmError] = useState<string | null>(null);
@@ -84,6 +87,8 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
     try {
       const data = await usersApi.lookupHrmEmployee(empCode.trim());
       setHrmResult(data);
+      if (data.division) setDivision(data.division);
+      if (data.fullName) setFullName(data.fullName);
     } catch (err) {
       setHrmError(getErrorMessage(err));
     } finally {
@@ -98,6 +103,8 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
     try {
       await createUserMutation.mutateAsync({
         employeeCode: empCode.trim(),
+        fullName: fullName.trim() || undefined,
+        division: division || undefined,
         role,
         ...permissions,
       });
@@ -110,6 +117,8 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
 
   const handleClose = () => {
     setEmpCode('');
+    setFullName('');
+    setDivision('');
     setHrmResult(null);
     setHrmError(null);
     setRole(UserRole.VIEWER);
@@ -209,18 +218,55 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
             </div>
           )}
 
-          {/* HRM Lookup Error */}
+          {/* HRM Lookup Error / Fallback fields */}
           {hrmError && (
-            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="space-y-3">
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">{hrmError}</p>
+                  <p className="text-[11px] text-amber-700 mt-0.5">
+                    (ທ່ານຍັງສາມາດກຳນົດຊື່, ພະແນກ ແລະ ກົດບັນທຶກເພື່ອສ້າງບັນຊີໄດ້)
+                  </p>
+                </div>
+              </div>
+
               <div>
-                <p className="font-semibold">{hrmError}</p>
-                <p className="text-[11px] text-amber-700 mt-0.5">
-                  (ທ່ານຍັງສາມາດກົດບັນທຶກເພື່ອສ້າງບັນຊີດ້ວຍລະຫັດນີ້ໄດ້)
-                </p>
+                <label className="block text-xs font-bold text-text-primary mb-1.5">
+                  ຊື່ ແລະ ນາມສະກຸນ (Full Name)
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="ປ້ອນຊື່ ແລະ ນາມສະກຸນພະນັກງານ"
+                  className="w-full px-3.5 py-2.5 bg-white border border-border-line rounded-xl text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
               </div>
             </div>
           )}
+
+          {/* Division Selection (3 Core Pillars) */}
+          <div>
+            <label className="block text-xs font-bold text-text-primary mb-1.5">
+              ສັງກັດພະແນກ (Division)
+            </label>
+            <select
+              value={division}
+              onChange={(e) => setDivision(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-white border border-border-line rounded-xl text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              <option value="">-- ດຶງຕາມ HRM ຫຼື ບໍ່ລະບຸ --</option>
+              {DIVISION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-text-muted mt-1">
+              ສິດທິການເຫັນໂມດູນສັນຍາ, ນິຕິກຳ ຫຼື ຄະດີ ຈະຖືກແຍກຕາມພະແນກທີ່ເລືອກ
+            </p>
+          </div>
 
           {/* Section 2: Role Selection */}
           <div>

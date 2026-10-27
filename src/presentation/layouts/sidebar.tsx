@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { X, LogOut, Shield } from 'lucide-react';
 import { usePermissions } from '@/presentation/hooks';
@@ -15,7 +16,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { user, isAdmin, hasPermission } = usePermissions();
+  const { user, isAdmin, hasPermission, canAccessDivision } = usePermissions();
   const logout = useAuthStore((s) => s.logout);
 
   const handleLogout = () => {
@@ -40,10 +41,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         }`}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 relative z-10">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center font-bold text-lg text-yellow-400 shadow-inner">
-              ⚡
+            <div className="w-10 h-10 rounded-xl bg-white/95 p-1 shadow-sm flex items-center justify-center shrink-0 border border-white/20">
+              <Image
+                src="/edl-logo.png"
+                alt="EDL Logo"
+                width={34}
+                height={34}
+                className="object-contain"
+                priority
+              />
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-tight text-white leading-tight">
@@ -65,11 +73,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </button>
         </div>
 
+        {/* Faded Background Logo Watermark in Sidebar */}
+        <div className="absolute -right-14 bottom-24 w-60 h-60 opacity-[0.06] pointer-events-none select-none z-0">
+          <Image
+            src="/edl-logo.png"
+            alt=""
+            fill
+            className="object-contain"
+          />
+        </div>
+
         {/* Navigation Items (Scrollable) */}
-        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-6 custom-scrollbar">
+        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-6 custom-scrollbar relative z-10">
           {NAVIGATION_CONFIG.map((group, groupIdx) => {
             // Check admin group restriction
             if (group.adminOnly && !isAdmin) return null;
+
+            // Check division restriction
+            if (group.divisionKey && !canAccessDivision(group.divisionKey)) return null;
 
             // Filter items by permission
             const visibleItems = group.items.filter((item) => {

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useLogin } from '../hooks/use-login';
 import {
   User as UserIcon,
@@ -36,8 +37,14 @@ export function LoginForm() {
     <div className="w-full max-w-md mx-auto">
       {/* Mobile Branding Header (visible only on small screens) */}
       <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center font-bold text-xl text-yellow-400 shadow-md">
-          ⚡
+        <div className="w-12 h-12 rounded-xl bg-white p-1 shadow-md flex items-center justify-center border border-border-line shrink-0">
+          <Image
+            src="/edl-logo.png"
+            alt="EDL Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
         </div>
         <div className="text-left">
           <h2 className="text-base font-bold text-text-primary">
