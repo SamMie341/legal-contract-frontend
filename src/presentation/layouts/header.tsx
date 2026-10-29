@@ -35,6 +35,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
     if (path.startsWith('/contracts')) return 'ພະແນກສັນຍາທົ່ວໄປ (General Contracts)';
     if (path.startsWith('/legal-documents')) return 'ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ (Legal Documents)';
     if (path.startsWith('/legal-cases')) return 'ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ (Disputes & Litigation)';
+    if (path.startsWith('/power-contracts')) return 'ພະແນກສັນຍາຊື້-ຂາຍໄຟຟ້າ (Power Contracts)';
     if (path.startsWith('/users')) return 'ຈັດການຜູ້ໃຊ້ງານ (Users)';
     if (path.startsWith('/departments')) return 'ຈັດການຫ້ອງການ/ຝ່າຍ (Departments)';
     if (path.startsWith('/audit-logs')) return 'ປະຫວັດການດຳເນີນງານ (Audit Logs)';

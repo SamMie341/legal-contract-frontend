@@ -29,15 +29,17 @@ export function MainLayout({ children }: MainLayoutProps) {
           <Header onOpenSidebar={() => setIsSidebarOpen(true)} />
         </Suspense>
 
-        {/* Faded Background Logo Watermark across the workspace */}
-        <div className="fixed right-8 bottom-8 w-[380px] h-[380px] sm:w-[480px] sm:h-[480px] opacity-[0.035] pointer-events-none select-none z-0">
-          <Image
-            src="/edl-logo.png"
-            alt="EDL Watermark"
-            fill
-            className="object-contain"
-            priority={false}
-          />
+        {/* Centered Faded EDL Logo Watermark across the workspace */}
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+          <div className="w-[360px] h-[360px] sm:w-[520px] sm:h-[520px] lg:w-[640px] lg:h-[640px] opacity-[0.045]">
+            <Image
+              src="/edl-logo.png"
+              alt="EDL Watermark"
+              fill
+              className="object-contain"
+              priority={false}
+            />
+          </div>
         </div>
 
         {/* Scrollable Page Body */}

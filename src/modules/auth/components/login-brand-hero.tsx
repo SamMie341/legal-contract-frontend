@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { FileText, Scale, ShieldCheck, Briefcase } from 'lucide-react';
+import { FileText, Scale, ShieldCheck, Briefcase, Zap } from 'lucide-react';
 
 export function LoginBrandHero() {
   return (
@@ -59,25 +59,35 @@ export function LoginBrandHero() {
           ສູນກາງຕິດຕາມສັນຍາທຸລະກິດ 14 ປະເພດ, ຈັດເກັບນິຕິກຳ ແລະ ຕິດຕາມສຳນວນຄະດີພ້ອມສະຖິຕິການເງິນ LAK & USD ແບບ Real-time
         </p>
 
-        {/* 2 Core Divisions Cards */}
-        <div className="grid gap-3 max-w-lg">
-          <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors">
+        {/* 3 Core Divisions Cards */}
+        <div className="grid gap-2.5 max-w-lg">
+          <div className="flex items-center gap-3.5 p-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors">
             <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300">
-              <Briefcase className="w-5 h-5" />
+              <Briefcase className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">1. ພະແນກສັນຍາທົ່ວໄປ</h3>
-              <p className="text-xs text-blue-200">ຕິດຕາມສັນຍາ 14 ປະເພດ (LAK, USD, CNY) ແລະ ແຈ້ງເຕືອນໃກ້ໝົດອາຍຸອັດຕະໂນມັດ</p>
+              <h3 className="text-xs font-semibold text-white">1. ພະແນກສັນຍາທົ່ວໄປ</h3>
+              <p className="text-[11px] text-blue-200">ຕິດຕາມສັນຍາ 14 ປະເພດ (LAK, USD, CNY) ແລະ ແຈ້ງເຕືອນໃກ້ໝົດອາຍຸອັດຕະໂນມັດ</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors">
+          <div className="flex items-center gap-3.5 p-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors">
             <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-300">
-              <Scale className="w-5 h-5" />
+              <Scale className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">2. ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ</h3>
-              <p className="text-xs text-blue-200">ຄຸ້ມຄອງລະບຽບການ/ນິຕິກຳ ແລະ ຕິດຕາມສຳນວນຄະດີ ພ້ອມມູນຄ່າການເງິນ LAK & USD</p>
+              <h3 className="text-xs font-semibold text-white">2. ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ</h3>
+              <p className="text-[11px] text-blue-200">ຄຸ້ມຄອງລະບຽບການ/ນິຕິກຳ ແລະ ຕິດຕາມສຳນວນຄະດີ ພ້ອມມູນຄ່າການເງິນ LAK & USD</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 p-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors">
+            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300">
+              <Zap className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold text-white">3. ພະແນກສັນຍາຊື້-ຂາຍໄຟຟ້າ</h3>
+              <p className="text-[11px] text-blue-200">ຄຸ້ມຄອງສັນຍາຊື້-ຂາຍໄຟຟ້າ (PPA, Concession), ໂຄງການເຂື່ອນ ແລະ ຜູ້ຜະລິດໄຟຟ້າ</p>
             </div>
           </div>
         </div>

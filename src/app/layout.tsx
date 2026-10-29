@@ -23,7 +23,13 @@ export const metadata: Metadata = {
   },
   description: 'ລະບົບຄຸ້ມຄອງສັນຍາ, ນິຕິກຳ ແລະ ຄະດີຄວາມ ລັດວິສາຫະກິດໄຟຟ້າລາວ (EDL)',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/edl-logo.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/edl-logo.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
 };
 

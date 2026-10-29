@@ -16,14 +16,16 @@ export default function LoginPage() {
 
       {/* Login Form Container (Right Half) */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 my-auto relative">
-        {/* Faint EDL Logo Watermark on right side */}
-        <div className="absolute right-4 bottom-4 w-80 h-80 opacity-[0.035] pointer-events-none select-none z-0">
-          <Image
-            src="/edl-logo.png"
-            alt=""
-            fill
-            className="object-contain"
-          />
+        {/* Faint EDL Logo Watermark on form side */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+          <div className="w-96 h-96 opacity-[0.045]">
+            <Image
+              src="/edl-logo.png"
+              alt=""
+              fill
+              className="object-contain"
+            />
+          </div>
         </div>
 
         <div className="w-full max-w-md bg-surface p-8 sm:p-10 rounded-2xl shadow-xl shadow-slate-200/60 border border-border-line relative z-10">

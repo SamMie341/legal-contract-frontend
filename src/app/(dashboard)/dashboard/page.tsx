@@ -5,6 +5,7 @@ import {
   Briefcase,
   FileText,
   Scale,
+  Zap,
   ArrowRight,
   ClockAlert,
   ShieldCheck,
@@ -41,13 +42,14 @@ export default function DashboardPage() {
             ສະບາຍດີ, ຍິນດີຕ້ອນຮັບສູ່ລະບົບ
           </h1>
           <p className="text-sm text-blue-100/90 mt-2 leading-relaxed">
-            ສູນກາງຕິດຕາມຂໍ້ມູນສັນຍາ 14 ປະເພດ, ຈັດເກັບນິຕິກຳ ແລະ ຕິດຕາມສຳນວນຄະດີພ້ອມຍອດການເງິນ LAK & USD ຂອງ ລັດວິສາຫະກິດໄຟຟ້າລາວ
+            ສູນກາງຕິດຕາມຂໍ້ມູນສັນຍາທຸລະກິດ, ຈັດເກັບນິຕິກຳ, ຄຸ້ມຄອງສຳນວນຄະດີ ແລະ
+            ຕິດຕາມສັນຍາຊື້-ຂາຍໄຟຟ້າ (PPA & PSA) ຂອງ ລັດວິສາຫະກິດໄຟຟ້າລາວ
           </p>
         </div>
       </div>
 
-      {/* 2 Core Divisions Cards (2 ພະແນກຫຼັກ) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 3 Core Divisions Cards (3 ພະແນກຫຼັກ) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Division 1: General Contracts */}
         <div className="p-6 rounded-2xl bg-surface border border-border-line hover:shadow-md transition-shadow flex flex-col justify-between">
           <div>
@@ -59,11 +61,13 @@ export default function DashboardPage() {
                 14 ປະເພດສັນຍາ
               </span>
             </div>
-            <h3 className="text-lg font-bold text-text-primary">
+            <h3 className="text-base sm:text-lg font-bold text-text-primary">
               1. ພະແນກສັນຍາທົ່ວໄປ
             </h3>
             <p className="text-xs text-text-secondary mt-2 leading-relaxed">
-              ສູນກາງຕິດຕາມສັນຍາ 14 ປະເພດ (O&M, EPC, ເຊົ່າດິນ, MOA, PTA...), ຄຸ້ມຄອງມູນຄ່າສັນຍາ 3 ສະກຸນເງິນ (LAK, USD, CNY) ແລະ ແຈ້ງເຕືອນສັນຍາໃກ້ໝົດອາຍຸອັດຕະໂນມັດທຸກທ່ຽງຄືນ (≤ 60 ວັນ).
+              ສູນກາງຕິດຕາມສັນຍາ 14 ປະເພດ (O&M, EPC, ເຊົ່າດິນ, MOA, PTA...),
+              ຄຸ້ມຄອງມູນຄ່າສັນຍາ 3 ສະກຸນເງິນ (LAK, USD, CNY) ແລະ
+              ແຈ້ງເຕືອນສັນຍາໃກ້ໝົດອາຍຸອັດຕະໂນມັດ (≤ 60 ວັນ).
             </p>
           </div>
 
@@ -110,11 +114,13 @@ export default function DashboardPage() {
                 </span>
               </div>
             </div>
-            <h3 className="text-lg font-bold text-text-primary">
+            <h3 className="text-base sm:text-lg font-bold text-text-primary">
               2. ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ
             </h3>
             <p className="text-xs text-text-secondary mt-2 leading-relaxed">
-              ຄຸ້ມຄອງລະບຽບການ, ຂໍ້ກຳນົດ, ແຈ້ງການ, ແລະ ປຶ້ມຄູ່ມືພ້ອມໄຟລ໌ແນບ ພ້ອມທັງຕິດຕາມສຳນວນຄະດີຄວາມ, ຂັ້ນຕອນສານ (ຂັ້ນຕົ້ນ, ອຸທອນ, ລົບລ້າງ) ແລະ ມູນຄ່າຄວາມເສຍຫາຍ/ຍອດກູ້ຄືນໄດ້.
+              ຄຸ້ມຄອງລະບຽບການ, ຂໍ້ກຳນົດ, ແຈ້ງການ, ແລະ ປຶ້ມຄູ່ມືພ້ອມໄຟລ໌ແນບ
+              ພ້ອມທັງຕິດຕາມສຳນວນຄະດີຄວາມ, ຂັ້ນຕອນສານ (ຂັ້ນຕົ້ນ, ອຸທອນ, ລົບລ້າງ)
+              ແລະ ມູນຄ່າຄວາມເສຍຫາຍ/ຍອດກູ້ຄືນໄດ້.
             </p>
           </div>
 
@@ -151,6 +157,59 @@ export default function DashboardPage() {
                 ລາຍການຄະດີ
               </Link>
             </div>
+          </div>
+        </div>
+
+        {/* Division 3: Power Purchase & Sale Contracts */}
+        <div className="p-6 rounded-2xl bg-surface border border-border-line hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 rounded-xl bg-amber-50 text-amber-600 border border-amber-100">
+                <Zap className="w-6 h-6" />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  PPA ຊື້ໄຟ
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  PSA ຂາຍໄຟ
+                </span>
+              </div>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-text-primary">
+              3. ພະແນກສັນຍາຊື້-ຂາຍໄຟຟ້າ
+            </h3>
+            <p className="text-xs text-text-secondary mt-2 leading-relaxed">
+              ສູນກາງຕິດຕາມສັນຍາຊື້ໄຟຟ້າ (PPA 5 ປະເພດ: ນ້ຳຕົກ, ແສງຕາເວັນ, ລົມ,
+              ຄວາມຮ້ອນ, ຊີວະມວນ) ແລະ ສັນຍາຂາຍໄຟຟ້າ (PSA), ຄຸ້ມຄອງກຳລັງຕິດຕັ້ງ
+              (MW) ແລະ ລາຄາໄຟ.
+            </p>
+          </div>
+
+          <div className="pt-6 mt-5 border-t border-border-line flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/power-contracts/dashboard"
+                className="text-xs font-semibold text-amber-600 hover:text-amber-700 flex items-center gap-1"
+              >
+                <span>ສະຖິຕິ Dashboard</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <span className="text-border-line">|</span>
+              <Link
+                href="/power-contracts"
+                className="text-xs text-text-secondary hover:text-text-primary"
+              >
+                ລາຍການສັນຍາ
+              </Link>
+            </div>
+            <Link
+              href="/power-contracts?status=EXPIRING_SOON"
+              className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50"
+              title="ສັນຍາໃກ້ໝົດອາຍຸ"
+            >
+              <ClockAlert className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </div>

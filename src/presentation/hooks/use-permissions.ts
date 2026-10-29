@@ -5,13 +5,15 @@ import { UserRole, UserPermissions } from '@core/entities';
 import {
   isGeneralContractDivision,
   isLegalAndDisputeDivision,
+  isPowerContractDivision,
 } from '@core/constants';
 
 export type DivisionAccessKey =
   | 'CONTRACTS'
   | 'LEGAL_AND_DISPUTE'
   | 'LEGAL_DOCUMENTS'
-  | 'LEGAL_CASES';
+  | 'LEGAL_CASES'
+  | 'POWER_CONTRACTS';
 
 /**
  * Custom React hook for clean and reactive permission checking in UI components
@@ -27,17 +29,20 @@ export function usePermissions() {
   const canDelete = isAdmin || Boolean(user?.canDelete);
   const canDownload = isAdmin || Boolean(user?.canDownload);
 
-  // Division-level permissions (2 Divisions: Contracts & Legal/Disputes)
+  // Division-level permissions (3 Divisions: General Contracts, Legal/Disputes, Power Contracts)
   const canAccessContracts = isAdmin || isGeneralContractDivision(user?.division);
   const canAccessLegalAndDispute = isAdmin || isLegalAndDisputeDivision(user?.division);
   const canAccessLegalDocuments = canAccessLegalAndDispute;
   const canAccessLegalCases = canAccessLegalAndDispute;
+  const canAccessPowerContracts = isAdmin || isPowerContractDivision(user?.division);
 
   const canAccessDivision = (divisionKey?: DivisionAccessKey): boolean => {
     if (!divisionKey || isAdmin) return true;
     switch (divisionKey) {
       case 'CONTRACTS':
         return canAccessContracts;
+      case 'POWER_CONTRACTS':
+        return canAccessPowerContracts;
       case 'LEGAL_AND_DISPUTE':
       case 'LEGAL_DOCUMENTS':
       case 'LEGAL_CASES':
@@ -72,6 +77,7 @@ export function usePermissions() {
     canAccessLegalAndDispute,
     canAccessLegalDocuments,
     canAccessLegalCases,
+    canAccessPowerContracts,
     canAccessDivision,
     hasRole,
     hasPermission,

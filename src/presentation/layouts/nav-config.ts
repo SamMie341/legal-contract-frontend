@@ -8,6 +8,7 @@ import {
   History,
   FilePlus,
   ClockAlert,
+  Zap,
 } from 'lucide-react';
 import { UserPermissions } from '@core/entities';
 import { DivisionAccessKey } from '@/presentation/hooks';
@@ -105,6 +106,39 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         titleEn: 'Legal Cases & Disputes',
         href: '/legal-cases',
         icon: Scale,
+      },
+    ],
+  },
+  {
+    groupName: '3. ພະແນກສັນຍາຊື້-ຂາຍໄຟຟ້າ',
+    groupNameEn: 'Power Purchase & Sale Division',
+    divisionKey: 'POWER_CONTRACTS',
+    items: [
+      {
+        title: 'ສະຖິຕິຊື້-ຂາຍໄຟ (Dashboard)',
+        titleEn: 'Power Contracts Dashboard',
+        href: '/power-contracts/dashboard',
+        icon: LayoutDashboard,
+      },
+      {
+        title: 'ລາຍການສັນຍາຊື້-ຂາຍໄຟ',
+        titleEn: 'All Power Contracts',
+        href: '/power-contracts',
+        icon: Zap,
+      },
+      {
+        title: 'ສັນຍາໃກ້ໝົດອາຍຸ (≤ 60 ວັນ)',
+        titleEn: 'Expiring Soon',
+        href: '/power-contracts?status=EXPIRING_SOON',
+        icon: ClockAlert,
+        badgeColor: 'bg-amber-500 text-white',
+      },
+      {
+        title: 'ສ້າງສັນຍາໃໝ່',
+        titleEn: 'New Power Contract',
+        href: '/power-contracts/create',
+        icon: FilePlus,
+        requiredPermission: 'canUpload',
       },
     ],
   },
