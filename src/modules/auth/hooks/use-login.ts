@@ -14,7 +14,6 @@ export function useLogin() {
   const redirectUrl = searchParams.get('redirect') || '/dashboard';
   const isExpired = searchParams.get('expired') === 'true';
 
-  const [isHrm, setIsHrm] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const { login, isLoading, error, clearError } = useAuthStore();
@@ -24,15 +23,8 @@ export function useLogin() {
     defaultValues: {
       username: '',
       password: '',
-      isHrm: true,
     },
   });
-
-  const handleModeChange = (hrmMode: boolean) => {
-    setIsHrm(hrmMode);
-    form.setValue('isHrm', hrmMode);
-    clearError();
-  };
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -46,7 +38,7 @@ export function useLogin() {
         username: data.username.trim(),
         password: data.password,
       },
-      isHrm
+      false
     );
 
     if (success) {
@@ -58,15 +50,13 @@ export function useLogin() {
     } else {
       const currentError = useAuthStore.getState().error;
       toast.error('ເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ', {
-        description: currentError || 'ກະລຸນາກວດສອບຊື່ຜູ້ໃຊ້ ແລະ ລະຫັດຜ່ານຄືນໃໝ່',
+        description: currentError || 'ກະລຸນາກວດສອບຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານຄືນໃໝ່',
       });
     }
   };
 
   return {
     form,
-    isHrm,
-    handleModeChange,
     showPassword,
     togglePasswordVisibility,
     onSubmit: form.handleSubmit(onSubmit),

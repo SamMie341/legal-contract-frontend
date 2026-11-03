@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { useAuthStore } from '@application/store';
+import { ThemeProvider } from './theme-provider';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -33,18 +34,20 @@ export function AppProviders({ children }: AppProvidersProps) {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        toastOptions={{
-          style: {
-            fontFamily: 'var(--font-fira-code), var(--font-noto-sans-lao), sans-serif',
-          },
-        }}
-      />
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{
+            style: {
+              fontFamily: 'var(--font-fira-code), var(--font-noto-sans-lao), sans-serif',
+            },
+          }}
+        />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

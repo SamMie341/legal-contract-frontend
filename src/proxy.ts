@@ -14,16 +14,19 @@ export function proxy(request: NextRequest) {
   }
 
   const token = request.cookies.get(STORAGE_KEYS.ACCESS_TOKEN)?.value;
+  const refreshToken = request.cookies.get(STORAGE_KEYS.REFRESH_TOKEN)?.value;
+  const hasSession = Boolean(token || refreshToken);
+  const isExpired = request.nextUrl.searchParams.get('expired') === 'true';
 
   const isPublicPath = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
 
-  // 1. If user already has an active token and visits /login, redirect to /dashboard
-  if (token && isPublicPath) {
+  // 1. If user already has an active session and visits /login (without expired flag), redirect to /dashboard
+  if (hasSession && isPublicPath && !isExpired) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // 2. If user has no token and visits a protected page, redirect to /login
-  if (!token && !isPublicPath && pathname !== '/') {
+  // 2. If user has no token or refresh token and visits a protected page, redirect to /login
+  if (!hasSession && !isPublicPath && pathname !== '/') {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);

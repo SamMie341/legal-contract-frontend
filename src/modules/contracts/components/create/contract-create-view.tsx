@@ -10,6 +10,12 @@ import { usePermissions } from '@/presentation/hooks/use-permissions';
 export function ContractCreateView() {
   const { canUpload } = usePermissions();
   const { data: contractTypes = [], isLoading: isLoadingTypes } = useContractTypesDropdown();
+  const [formKey, setFormKey] = React.useState<number>(() => Date.now());
+
+  React.useEffect(() => {
+    // Ensure form is completely fresh each time user enters this page
+    setFormKey(Date.now());
+  }, []);
 
   if (!canUpload) {
     return (
@@ -65,7 +71,7 @@ export function ContractCreateView() {
           <div className="h-40 bg-slate-200/60 rounded-xl" />
         </div>
       ) : (
-        <ContractForm mode="create" contractTypes={contractTypes} />
+        <ContractForm key={formKey} mode="create" contractTypes={contractTypes} />
       )}
     </div>
   );

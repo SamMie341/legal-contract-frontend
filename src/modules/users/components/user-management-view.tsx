@@ -16,17 +16,24 @@ import { UserTable } from './user-table';
 import { CreateUserModal } from './create-user-modal';
 import { EditPermissionsModal } from './edit-permissions-modal';
 import { DeleteUserDialog } from './delete-user-dialog';
+import { UserDetailModal } from './user-detail-modal';
+import { ResetPasswordModal } from './reset-password-modal';
+import { useRolesList } from '@/modules/roles';
 
 export function UserManagementView() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole | undefined>(undefined);
+  const [selectedRole, setSelectedRole] = useState<UserRole | string | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+
+  const { data: roles = [] } = useRolesList();
 
   const { data, isLoading, isFetching, refetch } = useUsersList({
     page,
@@ -106,6 +113,7 @@ export function UserManagementView() {
           {[
             { label: 'ທັງໝົດ', val: undefined },
             { label: 'ADMIN', val: UserRole.ADMIN },
+            { label: 'ຫົວໜ້າຝ່າຍ', val: UserRole.DEPARTMENT_HEAD },
             { label: 'MAIN USER', val: UserRole.MAIN_USER },
             { label: 'EDITOR', val: UserRole.EDITOR },
             { label: 'VIEWER', val: UserRole.VIEWER },
@@ -133,7 +141,9 @@ export function UserManagementView() {
       <UserTable
         users={users}
         isLoading={isLoading}
+        onViewDetail={(u) => setViewingUser(u)}
         onEditPermissions={(u) => setEditingUser(u)}
+        onResetPassword={(u) => setResetPasswordUser(u)}
         onDeleteUser={(u) => setDeletingUser(u)}
       />
 
@@ -170,6 +180,21 @@ export function UserManagementView() {
       )}
 
       {/* Modals */}
+      <UserDetailModal
+        user={viewingUser}
+        roles={roles}
+        isOpen={Boolean(viewingUser)}
+        onClose={() => setViewingUser(null)}
+        onEditPermissions={(u) => {
+          setViewingUser(null);
+          setEditingUser(u);
+        }}
+        onResetPassword={(u) => {
+          setViewingUser(null);
+          setResetPasswordUser(u);
+        }}
+      />
+
       <CreateUserModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -177,8 +202,15 @@ export function UserManagementView() {
 
       <EditPermissionsModal
         user={editingUser}
+        roles={roles}
         isOpen={Boolean(editingUser)}
         onClose={() => setEditingUser(null)}
+      />
+
+      <ResetPasswordModal
+        user={resetPasswordUser}
+        isOpen={Boolean(resetPasswordUser)}
+        onClose={() => setResetPasswordUser(null)}
       />
 
       <DeleteUserDialog

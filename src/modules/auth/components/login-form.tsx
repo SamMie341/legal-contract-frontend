@@ -10,16 +10,12 @@ import {
   EyeOff,
   Loader2,
   AlertCircle,
-  Building2,
-  KeyRound,
-  HelpCircle,
+  ShieldCheck,
 } from 'lucide-react';
 
 export function LoginForm() {
   const {
     form,
-    isHrm,
-    handleModeChange,
     showPassword,
     togglePasswordVisibility,
     onSubmit,
@@ -36,7 +32,7 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Mobile Branding Header (visible only on small screens) */}
-      <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+      <div className="lg:hidden flex items-center justify-center gap-3 mb-6">
         <div className="w-12 h-12 rounded-xl bg-white p-1 shadow-md flex items-center justify-center border border-border-line shrink-0">
           <Image
             src="/edl-logo.png"
@@ -58,54 +54,25 @@ export function LoginForm() {
 
       {/* Title */}
       <div className="text-center lg:text-left mb-6">
-        <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+        <h1 className="text-2xl font-extrabold text-text-primary tracking-tight">
           ເຂົ້າສູ່ລະບົບ
         </h1>
-        <p className="text-sm text-text-secondary mt-1">
-          ເລືອກວິທີການຢັ້ງຢືນຕົວຕົນເພື່ອເຂົ້າເຖິງລະບົບ
+        <p className="text-xs sm:text-sm text-text-secondary mt-1.5 leading-relaxed">
+          ປ້ອນຊື່ຜູ້ໃຊ້ງານ ຫຼື ລະຫັດພະນັກງານ ແລະ ລະຫັດຜ່ານເພື່ອເຂົ້າສູ່ລະບົບ
         </p>
       </div>
 
       {/* Session Expired Banner */}
       {isExpired && (
-        <div className="mb-5 p-3.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2.5">
+        <div className="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2.5">
           <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
           <span>ເຊສຊັນໝົດອາຍຸແລ້ວ ກະລຸນາເຂົ້າສູ່ລະບົບໃໝ່ອີກຄັ້ງ</span>
         </div>
       )}
 
-      {/* Login Mode Tabs */}
-      <div className="grid grid-cols-2 p-1 bg-slate-200/70 rounded-xl mb-6">
-        <button
-          type="button"
-          onClick={() => handleModeChange(true)}
-          className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold transition-all ${
-            isHrm
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          <Building2 className="w-3.5 h-3.5" />
-          <span>ລະຫັດພະນັກງານ (HRM)</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleModeChange(false)}
-          className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold transition-all ${
-            !isHrm
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          <KeyRound className="w-3.5 h-3.5" />
-          <span>ບັນຊີລະບົບ (Local/Admin)</span>
-        </button>
-      </div>
-
       {/* Error Message Box */}
       {error && (
-        <div className="mb-5 p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5 animate-fadeIn">
+        <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5 animate-fadeIn">
           <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
           <span className="leading-relaxed">{error}</span>
         </div>
@@ -116,7 +83,7 @@ export function LoginForm() {
         {/* Username / Employee Code */}
         <div>
           <label className="block text-xs font-semibold text-text-primary mb-1.5">
-            {isHrm ? 'ລະຫັດພະນັກງານ ຫຼື ຊື່ບັນຊີ HRM' : 'ຊື່ຜູ້ໃຊ້ງານ (Username)'}
+            ຊື່ຜູ້ໃຊ້ງານ ຫຼື ລະຫັດພະນັກງານ (Username / Employee Code)
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
@@ -125,7 +92,7 @@ export function LoginForm() {
             <input
               type="text"
               autoComplete="username"
-              placeholder={isHrm ? 'ຕົວຢ່າງ: 001234' : 'ຊື່ບັນຊີຜູ້ດູແລລະບົບ'}
+              placeholder="ປ້ອນຊື່ບັນຊີ ຫຼື ລະຫັດພະນັກງານ (ຕົວຢ່າງ: admin, 44652)"
               disabled={isLoading}
               {...register('username')}
               className={`w-full pl-10 pr-4 py-2.5 bg-surface border rounded-xl text-sm text-text-primary placeholder:text-text-muted transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
@@ -183,15 +150,13 @@ export function LoginForm() {
           )}
         </div>
 
-        {/* Info Note for HRM SSO */}
-        {isHrm && (
-          <div className="p-3 rounded-lg bg-blue-50/70 border border-blue-100 text-[11px] text-blue-900 flex items-start gap-2 leading-relaxed">
-            <HelpCircle className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-            <span>
-              ລະບົບຈະກວດສອບ ແລະ ຊິ້ງຂໍ້ມູນ (ຊື່, ພະແນກ, ຝ່າຍ) ຈາກຖານຂໍ້ມູນ HRM ຂອງ ຟຟລ ໂດຍອັດຕະໂນມັດ
-            </span>
-          </div>
-        )}
+        {/* Info Note */}
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-text-secondary flex items-start gap-2 leading-relaxed">
+          <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <span>
+            ທ່ານສາມາດນຳໃຊ້ ຊື່ບັນຊີລະບົບ (Username) ຫຼື ລະຫັດພະນັກງານ (Employee Code) ພ້ອມລະຫັດຜ່ານ ເພື່ອເຂົ້າສູ່ລະບົບໄດ້ທັນທີ
+          </span>
+        </div>
 
         {/* Submit Button */}
         <button

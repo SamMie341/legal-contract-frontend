@@ -139,22 +139,35 @@ export const powerContractApi = {
   },
 
   /**
-   * ດາວໂຫຼດໄຟລ໌ແນບ
+   * ດາວໂຫຼດໄຟລ໌ແນບ (Secure Blob Download - ປ້ອງກັນ Chromium Double-Request)
    */
   async downloadAttachment(
     attachmentId: string,
     fileName: string
   ): Promise<void> {
     const token = TokenStorage.getAccessToken();
-    const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : '';
-    const endpoint = `${ENV.API_URL}/power-contracts/attachments/${attachmentId}/download${tokenQuery}`;
+    const endpoint = `${ENV.API_URL}/power-contracts/attachments/${attachmentId}/download`;
 
+    const res = await fetch(endpoint, {
+      method: 'GET',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (!res.ok) {
+      throw new Error('ບໍ່ສາມາດດາວໂຫຼດໄຟລ໌ໄດ້');
+    }
+
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = endpoint;
+    link.href = blobUrl;
     link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
     link.remove();
+    setTimeout(() => {
+      window.URL.revokeObjectURL(blobUrl);
+    }, 1000);
   },
 
   /**

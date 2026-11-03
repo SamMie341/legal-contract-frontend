@@ -23,6 +23,24 @@ export const TokenStorage = {
     document.cookie = `${STORAGE_KEYS.ACCESS_TOKEN}=; path=/; max-age=0; SameSite=Lax`;
   },
 
+  getRefreshToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+  },
+
+  setRefreshToken(token: string): void {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, token);
+    // 7 days cookie to match backend 7d refresh token lifespan
+    document.cookie = `${STORAGE_KEYS.REFRESH_TOKEN}=${token}; path=/; max-age=${7 * 86400}; SameSite=Lax`;
+  },
+
+  removeRefreshToken(): void {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    document.cookie = `${STORAGE_KEYS.REFRESH_TOKEN}=; path=/; max-age=0; SameSite=Lax`;
+  },
+
   getUser(): User | null {
     if (typeof window === 'undefined') return null;
     const raw = localStorage.getItem(STORAGE_KEYS.USER_PROFILE);
@@ -46,6 +64,7 @@ export const TokenStorage = {
 
   clearSession(): void {
     this.removeAccessToken();
+    this.removeRefreshToken();
     this.removeUser();
   },
 };

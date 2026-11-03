@@ -107,6 +107,41 @@ export function PowerContractForm({
     initialData?.notifyDaysBefore || 60
   );
 
+  const resetForm = React.useCallback(() => {
+    setSelectedFiles([]);
+    setContractType(initialData?.contractType || PowerContractType.PURCHASE);
+    setContractNumber(initialData?.contractNumber || '');
+    setProjectName(initialData?.projectName || '');
+    setProjectTypeOrCustomer(initialData?.projectTypeOrCustomer || '');
+    setDurationText(initialData?.durationText || '');
+    setDurationMonths(initialData?.durationMonths?.toString() || '');
+    setSignedDate(initialData?.signedDate ? initialData.signedDate.substring(0, 10) : '');
+    setEffectiveDate(initialData?.effectiveDate ? initialData.effectiveDate.substring(0, 10) : '');
+    setExpirationDate(initialData?.expirationDate ? initialData.expirationDate.substring(0, 10) : '');
+    setInstalledCapacity(initialData?.installedCapacity || '');
+    setCapacityValue(initialData?.capacityValue?.toString() || '');
+    setCapacityUnit(initialData?.capacityUnit || 'MW');
+    setProjectLocation(initialData?.projectLocation || '');
+    setTariff(initialData?.tariff || '');
+    setTariffValue(initialData?.tariffValue?.toString() || '');
+    setTariffCurrency((initialData?.tariffCurrency as Currency) || Currency.USD);
+    setAdditionalDetails(initialData?.additionalDetails || '');
+    setStatus(initialData?.status || ContractStatus.ACTIVE);
+    setNotifyDaysBefore(initialData?.notifyDaysBefore || 60);
+  }, [initialData]);
+
+  // Reset form on mount and unmount when creating new contract
+  React.useEffect(() => {
+    if (!isEditMode) {
+      resetForm();
+    }
+    return () => {
+      if (!isEditMode) {
+        resetForm();
+      }
+    };
+  }, [isEditMode, resetForm]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -137,6 +172,7 @@ export function PowerContractForm({
 
     const result = await onSubmit(payload, selectedFiles);
     if (result && !isEditMode) {
+      resetForm();
       router.push(`/power-contracts/${result.id || ''}`);
     } else if (isEditMode && initialData) {
       router.push(`/power-contracts/${initialData.id}`);
@@ -144,7 +180,7 @@ export function PowerContractForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-6">
       {/* 1. Contract Type Selection (PURCHASE vs SALE) */}
       <div className="bg-surface p-6 rounded-2xl border border-border-line shadow-xs space-y-4">
         <div>

@@ -54,4 +54,25 @@ export const usersApi = {
   async deleteUser(id: string): Promise<void> {
     await apiClient.delete(`/users/${id}`);
   },
+
+  /**
+   * Reset user password (Admin only)
+   */
+  async resetPassword(id: string, payload?: { newPassword?: string }): Promise<{ temporaryPassword: string; message: string }> {
+    const res = await apiClient.patch<ApiResponse<{ temporaryPassword: string; userId: string; employeeCode: string }>>(
+      `/users/${id}/reset-password`,
+      payload || {}
+    );
+    return {
+      temporaryPassword: res.data.temporaryPassword,
+      message: res.message || 'ຣີເຊັດລະຫັດຜ່ານສຳເລັດ',
+    };
+  },
+
+  /**
+   * Change current user's own password
+   */
+  async changePassword(payload: { currentPassword: string; newPassword: string; confirmPassword?: string }): Promise<void> {
+    await apiClient.patch('/users/change-password', payload);
+  },
 };

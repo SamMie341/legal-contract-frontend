@@ -20,7 +20,7 @@ const TYPE_CONFIG: Record<
     labelEn: 'Agreement',
     className: 'bg-purple-50 text-purple-700 border-purple-200',
   },
-  [DocumentType.NOTICE]: {
+  [DocumentType.NOTIFICATION]: {
     label: 'ແຈ້ງການ',
     labelEn: 'Notice',
     className: 'bg-amber-50 text-amber-700 border-amber-200',

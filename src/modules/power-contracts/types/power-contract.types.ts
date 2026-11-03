@@ -39,14 +39,35 @@ export interface PowerContractQueryParams {
   projectTypeOrCustomer?: string;
 }
 
+export interface PowerContractFieldChange {
+  field: string;
+  fieldNameLo?: string;
+  fieldLabelLo?: string;
+  oldValue: any;
+  newValue: any;
+}
+
 export interface PowerContractAuditLog {
   id: string;
   action: string;
+  actionLabelLo?: string;
+  user?: {
+    id: string;
+    fullName: string;
+    employeeCode: string;
+    department?: string | null;
+    role?: string;
+  } | null;
   performedBy?: {
     id: string;
     fullName: string;
     employeeCode: string;
   };
-  changes?: Record<string, { old: any; new: any }>;
+  changes?:
+    | PowerContractFieldChange[]
+    | Record<string, { old?: any; new?: any; oldValue?: any; newValue?: any }>;
+  oldValues?: any;
+  newValues?: any;
+  ipAddress?: string | null;
   createdAt: string;
 }

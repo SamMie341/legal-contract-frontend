@@ -11,6 +11,12 @@ import {
 import { toast } from 'sonner';
 
 export default function CreatePowerContractPage() {
+  const [formKey, setFormKey] = React.useState<number>(() => Date.now());
+
+  React.useEffect(() => {
+    setFormKey(Date.now());
+  }, []);
+
   const createMutation = useCreatePowerContract();
 
   const handleCreate = async (payload: any, files: File[]) => {
@@ -52,6 +58,7 @@ export default function CreatePowerContractPage() {
 
       {/* Form Card */}
       <PowerContractForm
+        key={formKey}
         onSubmit={handleCreate}
         isSubmitting={createMutation.isPending}
       />

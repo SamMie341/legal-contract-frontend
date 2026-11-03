@@ -25,7 +25,7 @@ const TYPE_CONFIG: Record<
   [DocumentType.REGULATION]: { label: 'ກົດລະບຽບ (Regulation)', color: '#2563eb' },
   [DocumentType.PROVISION]: { label: 'ຂໍ້ກຳນົດ (Provision)', color: '#4f46e5' },
   [DocumentType.AGREEMENT]: { label: 'ຂໍ້ຕົກລົງ (Agreement)', color: '#9333ea' },
-  [DocumentType.NOTICE]: { label: 'ແຈ້ງການ (Notice)', color: '#f59e0b' },
+  [DocumentType.NOTIFICATION]: { label: 'ແຈ້ງການ (Notice)', color: '#f59e0b' },
   [DocumentType.MANUAL]: { label: 'ຄູ່ມື (Manual)', color: '#10b981' },
   [DocumentType.CONTRACT]: { label: 'ສັນຍາ (Contract)', color: '#06b6d4' },
   [DocumentType.OTHER]: { label: 'ອື່ນໆ (Other)', color: '#64748b' },

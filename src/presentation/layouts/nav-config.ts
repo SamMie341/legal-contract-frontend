@@ -4,13 +4,14 @@ import {
   FileText,
   Scale,
   Users,
+  ShieldCheck,
   Building2,
   History,
   FilePlus,
   ClockAlert,
   Zap,
 } from 'lucide-react';
-import { UserPermissions } from '@core/entities';
+import { UserPermissions, SystemModuleKey } from '@core/entities';
 import { DivisionAccessKey } from '@/presentation/hooks';
 
 export interface NavItem {
@@ -29,6 +30,7 @@ export interface NavGroup {
   groupNameEn: string;
   adminOnly?: boolean;
   divisionKey?: DivisionAccessKey;
+  systemModule?: SystemModuleKey;
   items: NavItem[];
 }
 
@@ -46,9 +48,10 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
     ],
   },
   {
-    groupName: '1. ພະແນກສັນຍາທົ່ວໄປ',
+    groupName: 'ພະແນກສັນຍາທົ່ວໄປ',
     groupNameEn: 'General Contracts Division',
     divisionKey: 'CONTRACTS',
+    systemModule: 'CONTRACTS',
     items: [
       {
         title: 'ສະຖິຕິສັນຍາ (Dashboard)',
@@ -79,7 +82,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
     ],
   },
   {
-    groupName: '2. ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ',
+    groupName: 'ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ',
     groupNameEn: 'Legal Affairs & Dispute Resolution Division',
     divisionKey: 'LEGAL_AND_DISPUTE',
     items: [
@@ -110,9 +113,10 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
     ],
   },
   {
-    groupName: '3. ພະແນກສັນຍາຊື້-ຂາຍໄຟຟ້າ',
+    groupName: 'ພະແນກສັນຍາຊື້-ຂາຍໄຟຟ້າ',
     groupNameEn: 'Power Purchase & Sale Division',
     divisionKey: 'POWER_CONTRACTS',
+    systemModule: 'POWER_CONTRACTS',
     items: [
       {
         title: 'ສະຖິຕິຊື້-ຂາຍໄຟ (Dashboard)',
@@ -147,6 +151,13 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
     groupNameEn: 'Administration',
     adminOnly: true,
     items: [
+      {
+        title: 'ຈັດການບົດບາດ & ສິດ (Roles)',
+        titleEn: 'Roles Management',
+        href: '/roles',
+        icon: ShieldCheck,
+        adminOnly: true,
+      },
       {
         title: 'ຈັດການຜູ້ໃຊ້ງານ & ສິດທິ',
         titleEn: 'User Management',

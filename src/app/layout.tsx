@@ -44,8 +44,29 @@ export default function RootLayout({
       className={`${firaCode.variable} ${notoSansLao.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('edl_theme');
+                  var isDark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
-        className="min-h-full flex flex-col bg-background-base text-text-primary"
+        className="min-h-full flex flex-col bg-background-base text-text-primary transition-colors duration-200"
         suppressHydrationWarning
       >
         <AppProviders>{children}</AppProviders>

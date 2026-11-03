@@ -53,12 +53,14 @@ export function PowerContractAttachments({
   );
 
   const handleDownload = async (attachment: PowerContractAttachment) => {
+    if (downloadingId) return;
     try {
       setDownloadingId(attachment.id);
       await powerContractApi.downloadAttachment(
         attachment.id,
         attachment.fileName
       );
+      toast.success('ດາວໂຫຼດໄຟລ໌ສຳເລັດແລ້ວ');
     } catch {
       toast.error('ບໍ່ສາມາດດາວໂຫຼດໄຟລ໌ໄດ້');
     } finally {

@@ -9,3 +9,7 @@ export * from './components/delete-user-dialog';
 export * from './components/user-role-badge';
 export * from './components/permission-pills';
 export * from './components/permission-checkbox-group';
+export * from './components/module-permissions-matrix';
+export * from './components/user-detail-modal';
+export * from './components/reset-password-modal';
+export * from './components/change-password-modal';

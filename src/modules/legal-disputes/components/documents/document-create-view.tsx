@@ -10,6 +10,12 @@ import { usePermissions } from '@/presentation/hooks/use-permissions';
 export function DocumentCreateView() {
   const { canUpload } = usePermissions();
   const { data: departments = [], isLoading: isLoadingDepts } = useDepartmentsList();
+  const [formKey, setFormKey] = React.useState<number>(() => Date.now());
+
+  React.useEffect(() => {
+    // Ensure form is completely fresh each time user enters this page
+    setFormKey(Date.now());
+  }, []);
 
   if (!canUpload) {
     return (
@@ -65,7 +71,7 @@ export function DocumentCreateView() {
           <div className="h-40 bg-slate-200/60 rounded-xl" />
         </div>
       ) : (
-        <DocumentForm mode="create" departments={departments} />
+        <DocumentForm key={formKey} mode="create" departments={departments} />
       )}
     </div>
   );

@@ -2,19 +2,22 @@ import { AppError } from './app-error';
 
 export class BadRequestError extends AppError {
   constructor(message: string = 'ຂໍ້ມູນທີ່ສົ່ງມາບໍ່ຖືກຕ້ອງ (Bad Request)', details?: unknown) {
-    super(message, 400, 'BAD_REQUEST', details);
+    const code = (details as any)?.code || 'BAD_REQUEST';
+    super(message, 400, code, details);
   }
 }
 
 export class UnauthorizedError extends AppError {
   constructor(message: string = 'ກະລຸນາເຂົ້າສູ່ລະບົບໃໝ່ອີກຄັ້ງ (Unauthorized)', details?: unknown) {
-    super(message, 401, 'UNAUTHORIZED', details);
+    const code = (details as any)?.code || 'UNAUTHORIZED';
+    super(message, 401, code, details);
   }
 }
 
 export class ForbiddenError extends AppError {
   constructor(message: string = 'ທ່ານບໍ່ມີສິດເຂົ້າເຖິງຂໍ້ມູນ ຫຼື ດຳເນີນການນີ້ (Forbidden)', details?: unknown) {
-    super(message, 403, 'FORBIDDEN', details);
+    const code = (details as any)?.code || 'FORBIDDEN';
+    super(message, 403, code, details);
   }
 }
 

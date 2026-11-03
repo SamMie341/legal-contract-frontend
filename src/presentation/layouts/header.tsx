@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   Bell,
   User as UserIcon,
   LogOut,
@@ -14,16 +16,26 @@ import {
 } from 'lucide-react';
 import { usePermissions } from '@/presentation/hooks';
 import { useAuthStore } from '@application/store';
+import { NotificationCenter } from '@/modules/notifications';
+import { ThemeToggle } from '@/presentation/components/ui';
+import { ChangePasswordModal } from '@/modules/users';
 
 interface HeaderProps {
-  onOpenSidebar: () => void;
+  isSidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
-export function Header({ onOpenSidebar }: HeaderProps) {
+export function Header({ isSidebarOpen, onToggleSidebar }: HeaderProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
   const { user, isAdmin } = usePermissions();
   const logout = useAuthStore((s) => s.logout);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -43,18 +55,30 @@ export function Header({ onOpenSidebar }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 sm:px-6 bg-surface border-b border-border-line shadow-xs">
-      {/* Left: Mobile Toggle & Page Title */}
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 sm:px-6 bg-surface border-b border-border-line shadow-2xs">
+      {/* Left: Sidebar Toggle & Page Title */}
       <div className="flex items-center gap-2.5 sm:gap-3">
         <button
           type="button"
-          onClick={onOpenSidebar}
-          className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-slate-100 lg:hidden"
+          onClick={onToggleSidebar}
+          title={isSidebarOpen ? 'ຫຍໍ້ Sidebar ເປັນແທັບນ້ອຍ (Ctrl+B)' : 'ຂະຫຍາຍ Sidebar (Ctrl+B)'}
+          className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
+          aria-label="Toggle Sidebar"
         >
-          <Menu className="w-5 h-5" />
+          {isSidebarOpen ? (
+            <PanelLeftClose className="w-5 h-5 hidden lg:block text-slate-600" />
+          ) : (
+            <PanelLeftOpen className="w-5 h-5 hidden lg:block text-slate-700" />
+          )}
+          <Menu className="w-5 h-5 lg:hidden" />
         </button>
 
-        <div className="w-8 h-8 rounded-lg bg-white p-0.5 border border-border-line flex items-center justify-center shrink-0 lg:hidden shadow-2xs">
+        {/* Brand logo in header on mobile */}
+        <div
+          data-keep-light
+          style={{ backgroundColor: '#ffffff' }}
+          className="w-8 h-8 rounded-lg p-0.5 border border-slate-200 dark:border-white/20 flex items-center justify-center shrink-0 shadow-2xs lg:hidden"
+        >
           <Image
             src="/edl-logo.png"
             alt="EDL"
@@ -74,17 +98,13 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         </div>
       </div>
 
-      {/* Right: Notification & User Dropdown */}
+      {/* Right: Theme Toggle, Notification & User Dropdown */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Notifications Icon */}
-        <button
-          type="button"
-          className="relative p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-slate-100 transition-colors"
-          title="ການແຈ້ງເຕືອນ"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-        </button>
+        {/* Dark / Light Mode Toggle */}
+        <ThemeToggle />
+
+        {/* Notifications Center */}
+        <NotificationCenter />
 
         {/* User Dropdown */}
         <div className="relative">
@@ -94,14 +114,14 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-border-line bg-white hover:bg-slate-50 transition-all text-left"
           >
             <div className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center text-xs font-bold">
-              {user?.fullName?.charAt(0) || 'U'}
+              {isMounted ? (user?.fullName?.charAt(0) || 'U') : 'U'}
             </div>
-            <div className="hidden md:block min-w-0">
+            <div className="hidden md:block min-w-0" suppressHydrationWarning>
               <p className="text-xs font-semibold text-text-primary leading-tight truncate">
-                {user?.fullName || 'ຜູ້ໃຊ້ງານ'}
+                {isMounted ? (user?.fullName || 'ຜູ້ໃຊ້ງານ') : 'ຜູ້ໃຊ້ງານ'}
               </p>
               <p className="text-[10px] text-text-secondary truncate">
-                {user?.department || (isAdmin ? 'ຜູ້ດູແລລະບົບ' : 'ພະນັກງານ ຟຟລ')}
+                {isMounted ? (user?.department || (isAdmin ? 'ຜູ້ດູແລລະບົບ' : 'ພະນັກງານ ຟຟລ')) : 'ພະນັກງານ ຟຟລ'}
               </p>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-text-muted hidden md:block" />
@@ -124,7 +144,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
                   </p>
                   <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 text-[10px] text-blue-700 font-semibold border border-blue-200">
                     <KeyRound className="w-3 h-3" />
-                    <span>ບົດບາດ: {user?.role || 'VIEWER'}</span>
+                    <span>ບົດບາດ: {user?.roleTitle || user?.role || 'VIEWER'}</span>
                   </div>
                 </div>
 
@@ -134,6 +154,20 @@ export function Header({ onOpenSidebar }: HeaderProps) {
                     <span className="truncate">{user.department}</span>
                   </div>
                 )}
+
+                <div className="py-1 border-b border-border-line">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      setIsChangePasswordOpen(true);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                  >
+                    <KeyRound className="w-4 h-4 text-primary" />
+                    <span>ປ່ຽນລະຫັດຜ່ານ (Change Password)</span>
+                  </button>
+                </div>
 
                 <div className="pt-1">
                   <button
@@ -150,6 +184,12 @@ export function Header({ onOpenSidebar }: HeaderProps) {
           )}
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </header>
   );
 }

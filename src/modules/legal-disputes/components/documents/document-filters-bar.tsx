@@ -73,7 +73,7 @@ export function DocumentFiltersBar({
             <option value={DocumentType.REGULATION}>ກົດລະບຽບ (Regulation)</option>
             <option value={DocumentType.PROVISION}>ຂໍ້ກຳນົດ (Provision)</option>
             <option value={DocumentType.AGREEMENT}>ຂໍ້ຕົກລົງ (Agreement)</option>
-            <option value={DocumentType.NOTICE}>ແຈ້ງການ (Notice)</option>
+            <option value={DocumentType.NOTIFICATION}>ແຈ້ງການ (Notice)</option>
             <option value={DocumentType.MANUAL}>ຄູ່ມື (Manual)</option>
             <option value={DocumentType.CONTRACT}>ສັນຍາ (Contract)</option>
             <option value={DocumentType.OTHER}>ອື່ນໆ (Other)</option>
@@ -135,11 +135,10 @@ export function DocumentFiltersBar({
             key={tab.label}
             type="button"
             onClick={() => onStatusChange(tab.val)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              status === tab.val
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${status === tab.val
                 ? 'bg-primary text-white shadow-xs'
                 : 'bg-white text-text-secondary border border-border-line hover:border-slate-300'
-            }`}
+              }`}
           >
             {tab.label}
           </button>

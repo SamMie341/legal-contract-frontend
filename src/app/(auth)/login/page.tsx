@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { LoginBrandHero, LoginForm } from '@modules/auth';
+import { ThemeToggle } from '@/presentation/components/ui';
 
 export const metadata: Metadata = {
   title: 'ເຂົ້າສູ່ລະບົບ',
@@ -11,6 +12,11 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <main className="min-h-screen flex flex-col lg:flex-row bg-background-base relative overflow-hidden">
+      {/* Theme Toggle Button on Login Page */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+
       {/* Brand Hero (Desktop Left Half) */}
       <LoginBrandHero />
 
@@ -18,7 +24,7 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 my-auto relative">
         {/* Faint EDL Logo Watermark on form side */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
-          <div className="w-96 h-96 opacity-[0.045]">
+          <div className="w-96 h-96 opacity-[0.045] dark:opacity-[0.14] dark:brightness-110 transition-all">
             <Image
               src="/edl-logo.png"
               alt=""
@@ -28,7 +34,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="w-full max-w-md bg-surface p-8 sm:p-10 rounded-2xl shadow-xl shadow-slate-200/60 border border-border-line relative z-10">
+        <div className="w-full max-w-md bg-surface p-8 sm:p-10 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-none border border-border-line relative z-10">
           <Suspense
             fallback={
               <div className="text-center py-12 text-sm text-text-secondary">

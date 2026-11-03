@@ -109,6 +109,42 @@ export function CaseForm({ mode, initialData, departments }: CaseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
+  const resetForm = React.useCallback(() => {
+    setCaseCode(initialData?.caseCode || '');
+    setDefendant(initialData?.defendant || '');
+    setCaseType(initialData?.caseType || CaseType.CIVIL);
+    setDisputeStatus(initialData?.disputeStatus || DisputeStatus.FIRST_INSTANCE);
+    setDate(initialData?.date ? initialData.date.slice(0, 10) : new Date().toISOString().slice(0, 10));
+    setDepartmentId(initialData?.departmentId || '');
+    setAllegation(initialData?.allegation || '');
+    setDepartmentAction(initialData?.departmentAction || '');
+    setDisputeProgress(initialData?.disputeProgress || '');
+    setExternalUrl(initialData?.externalUrl || '');
+    setDamageLak(initialData?.damageLak !== undefined ? String(initialData.damageLak) : '0');
+    setDamageUsd(initialData?.damageUsd !== undefined ? String(initialData.damageUsd) : '0');
+    setFineLak(initialData?.fineLak !== undefined ? String(initialData.fineLak) : '0');
+    setFineUsd(initialData?.fineUsd !== undefined ? String(initialData.fineUsd) : '0');
+    setTotalDueLak(initialData?.totalDueLak !== undefined ? String(initialData.totalDueLak) : '0');
+    setTotalDueUsd(initialData?.totalDueUsd !== undefined ? String(initialData.totalDueUsd) : '0');
+    setRecoveredLak(initialData?.recoveredLak !== undefined ? String(initialData.recoveredLak) : '0');
+    setRecoveredUsd(initialData?.recoveredUsd !== undefined ? String(initialData.recoveredUsd) : '0');
+    setSelectedFiles([]);
+    setValidationErrors({});
+    setIsSubmitting(false);
+  }, [initialData]);
+
+  // Reset form on mount and unmount when in create mode to ensure fresh state
+  React.useEffect(() => {
+    if (mode === 'create') {
+      resetForm();
+    }
+    return () => {
+      if (mode === 'create') {
+        resetForm();
+      }
+    };
+  }, [mode, resetForm]);
+
   const currentCaseId = initialData?.internalId || initialData?.id || initialData?.caseCode || '';
 
   const createMutation = useCreateCase();
@@ -180,6 +216,7 @@ export function CaseForm({ mode, initialData, departments }: CaseFormProps) {
           }
         }
 
+        resetForm();
         router.push(`/legal-cases/${newCaseId}`);
       } else {
         if (!initialData) return;
@@ -254,7 +291,7 @@ export function CaseForm({ mode, initialData, departments }: CaseFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-6">
       {/* Section 1: Case Details */}
       <div className="p-6 bg-surface rounded-2xl border border-border-line shadow-xs space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-border-line text-sm font-bold text-text-primary">

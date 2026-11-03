@@ -7,7 +7,7 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, 'ກະລຸນາປ້ອນລະຫັດຜ່ານ (Password)'),
-  isHrm: z.boolean(),
+  isHrm: z.boolean().optional(),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;

@@ -73,6 +73,33 @@ export function DocumentForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
+  const resetForm = React.useCallback(() => {
+    setDocTitle(initialData?.docTitle || '');
+    setDocType(initialData?.docType || DocumentType.REGULATION);
+    setIssueYear(initialData?.issueYear || new Date().getFullYear());
+    setDocNumberDate(initialData?.docNumberDate || '');
+    setDepartmentId(initialData?.departmentId || '');
+    setResponsiblePerson(initialData?.responsiblePerson || '');
+    setPurpose(initialData?.purpose || '');
+    setExternalUrl(initialData?.externalUrl || '');
+    setStatus(initialData?.status || LegalDocumentStatus.ACTIVE);
+    setSelectedFiles([]);
+    setValidationErrors({});
+    setIsSubmitting(false);
+  }, [initialData]);
+
+  // Always reset form on mount and unmount when in create mode to ensure fresh state
+  React.useEffect(() => {
+    if (mode === 'create') {
+      resetForm();
+    }
+    return () => {
+      if (mode === 'create') {
+        resetForm();
+      }
+    };
+  }, [mode, resetForm]);
+
   const createMutation = useCreateDocument();
   const updateMutation = useUpdateDocument(initialData?.id || '');
   const uploadMutation = useUploadDocumentAttachment(initialData?.id || '');
@@ -135,6 +162,7 @@ export function DocumentForm({
           }
         }
 
+        resetForm();
         router.push(`/legal-documents/${newDoc.id}`);
       } else {
         if (!initialData) return;
@@ -200,7 +228,7 @@ export function DocumentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-6">
       {/* Section 1: Main Info */}
       <div className="p-6 bg-surface rounded-2xl border border-border-line shadow-xs space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-border-line text-sm font-bold text-text-primary">
@@ -224,11 +252,10 @@ export function DocumentForm({
                 }
               }}
               placeholder="ຕົວຢ່າງ: ກົດລະບຽບວ່າດ້ວຍການຄຸ້ມຄອງພະນັກງານ ແລະ ແຮງງານ ຟຟລ"
-              className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                validationErrors.docTitle
+              className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 ${validationErrors.docTitle
                   ? 'border-red-400 focus:border-red-500'
                   : 'border-border-line focus:border-primary'
-              }`}
+                }`}
             />
             {validationErrors.docTitle && (
               <p className="text-[11px] text-red-600 flex items-center gap-1 mt-0.5">
@@ -251,7 +278,7 @@ export function DocumentForm({
               <option value={DocumentType.REGULATION}>ກົດລະບຽບ (Regulation)</option>
               <option value={DocumentType.PROVISION}>ຂໍ້ກຳນົດ (Provision)</option>
               <option value={DocumentType.AGREEMENT}>ຂໍ້ຕົກລົງ (Agreement)</option>
-              <option value={DocumentType.NOTICE}>ແຈ້ງການ (Notice)</option>
+              <option value={DocumentType.NOTIFICATION}>ແຈ້ງການ (Notice)</option>
               <option value={DocumentType.MANUAL}>ຄູ່ມື (Manual)</option>
               <option value={DocumentType.CONTRACT}>ສັນຍາ (Contract)</option>
               <option value={DocumentType.OTHER}>ອື່ນໆ (Other)</option>
@@ -274,11 +301,10 @@ export function DocumentForm({
                   setValidationErrors((prev) => ({ ...prev, issueYear: '' }));
                 }
               }}
-              className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                validationErrors.issueYear
+              className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 ${validationErrors.issueYear
                   ? 'border-red-400 focus:border-red-500'
                   : 'border-border-line focus:border-primary'
-              }`}
+                }`}
             />
             {validationErrors.issueYear && (
               <p className="text-[11px] text-red-600 flex items-center gap-1 mt-0.5">
@@ -303,11 +329,10 @@ export function DocumentForm({
                 }
               }}
               placeholder="ຕົວຢ່າງ: ເລກທີ 012/ຟຟລ, ລົງວັນທີ 15/01/2026"
-              className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                validationErrors.docNumberDate
+              className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 ${validationErrors.docNumberDate
                   ? 'border-red-400 focus:border-red-500'
                   : 'border-border-line focus:border-primary'
-              }`}
+                }`}
             />
             {validationErrors.docNumberDate && (
               <p className="text-[11px] text-red-600 flex items-center gap-1 mt-0.5">
@@ -330,11 +355,10 @@ export function DocumentForm({
                   setValidationErrors((prev) => ({ ...prev, departmentId: '' }));
                 }
               }}
-              className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                validationErrors.departmentId
+              className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 ${validationErrors.departmentId
                   ? 'border-red-400 focus:border-red-500'
                   : 'border-border-line focus:border-primary'
-              }`}
+                }`}
             >
               <option value="">-- ເລືອກຫ້ອງການ / ຝ່າຍ --</option>
               {departments.map((dept) => (

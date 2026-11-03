@@ -102,6 +102,47 @@ export function ContractForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
+  const resetForm = React.useCallback(() => {
+    setContractNumber(initialData?.contractNumber || '');
+    setTitle(initialData?.title || '');
+    setContractTypeId(initialData?.contractTypeId || '');
+    setContractValue(
+      initialData?.contractValue !== undefined && initialData?.contractValue !== null
+        ? String(initialData.contractValue)
+        : ''
+    );
+    setCurrency(initialData?.currency || Currency.LAK);
+    setEffectiveDate(initialData?.effectiveDate ? initialData.effectiveDate.slice(0, 10) : '');
+    setExpirationDate(initialData?.expirationDate ? initialData.expirationDate.slice(0, 10) : '');
+    setSignedDate(initialData?.signedDate ? initialData.signedDate.slice(0, 10) : '');
+    setDurationText(initialData?.durationText || '');
+    setNotifyDaysBefore(initialData?.notifyDaysBefore || 60);
+    setImplementer(initialData?.implementer || '');
+    setEquityOrCapitalContribution(initialData?.equityOrCapitalContribution || '');
+    setSharePercentage(
+      initialData?.sharePercentage !== undefined && initialData?.sharePercentage !== null
+        ? String(initialData.sharePercentage)
+        : ''
+    );
+    setAdditionalDetails(initialData?.additionalDetails || '');
+    setStatus(initialData?.status || ContractStatus.ACTIVE);
+    setSelectedFiles([]);
+    setValidationErrors({});
+    setIsSubmitting(false);
+  }, [initialData]);
+
+  // Reset form on mount and unmount when in create mode to ensure fresh state
+  React.useEffect(() => {
+    if (mode === 'create') {
+      resetForm();
+    }
+    return () => {
+      if (mode === 'create') {
+        resetForm();
+      }
+    };
+  }, [mode, resetForm]);
+
   // Mutations
   const createMutation = useCreateContract();
   const updateMutation = useUpdateContract(initialData?.id || '');
@@ -177,6 +218,7 @@ export function ContractForm({
           }
         }
 
+        resetForm();
         router.push(`/contracts/${newContract.id}`);
       } else {
         // Edit Mode
@@ -249,7 +291,7 @@ export function ContractForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-6">
       {/* Section 1: Basic Contract Info */}
       <div className="p-6 bg-surface rounded-2xl border border-border-line shadow-xs space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-border-line text-sm font-bold text-text-primary">
