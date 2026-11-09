@@ -18,8 +18,11 @@ import { DepartmentTable } from './department-table';
 import { DepartmentModal } from './department-modal';
 import { DeleteDepartmentDialog } from './delete-department-dialog';
 import { HrmSyncModal } from './hrm-sync-modal';
+import { usePermissions } from '@/presentation/hooks';
+import { AccessDeniedView } from '@/presentation/components/ui/access-denied-view';
 
 export function DepartmentsManagementView() {
+  const { isMounted, isAdmin } = usePermissions();
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
 
@@ -43,6 +46,15 @@ export function DepartmentsManagementView() {
   const inUseCount = departments.filter(
     (d) => (d._count?.legalDocuments ?? 0) > 0 || (d._count?.legalCases ?? 0) > 0
   ).length;
+
+  if (isMounted && !isAdmin) {
+    return (
+      <AccessDeniedView
+        requiredDivisionName="ຜູ້ດູແລລະບົບ (ADMIN) ເທົ່ານັ້ນ"
+        moduleName="ຈັດການຫ້ອງການ / ຝ່າຍ (Departments)"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

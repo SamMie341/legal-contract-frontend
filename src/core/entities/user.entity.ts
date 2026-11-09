@@ -1,9 +1,16 @@
 /**
- * System Modules in EDL Legal System
+ * 3 Core Modules (Pillars) in EDL Legal System
  */
-export type SystemModuleKey =
+export type CoreModuleKey =
   | 'CONTRACTS'
   | 'POWER_CONTRACTS'
+  | 'LEGAL_AND_DISPUTE';
+
+/**
+ * System Modules in EDL Legal System (Core + Granular)
+ */
+export type SystemModuleKey =
+  | CoreModuleKey
   | 'LEGAL_DOCUMENTS'
   | 'LEGAL_CASES';
 
@@ -34,6 +41,7 @@ export interface ModulePermission {
 export enum UserRole {
   ADMIN = 'ADMIN',
   DEPARTMENT_HEAD = 'DEPARTMENT_HEAD',
+  DIVISION_HEAD = 'DIVISION_HEAD',
   MAIN_USER = 'MAIN_USER',
   EDITOR = 'EDITOR',
   VIEWER = 'VIEWER',
@@ -71,6 +79,7 @@ export interface User extends Partial<UserPermissions> {
   email?: string | null;
   phone?: string | null;
   isActive?: boolean;
+  tokenVersion?: number;
   accessibleModules?: string[];
   permissionsByModule?: Record<string, ModulePermission>;
   modulePermissions?: UserModulePermissionItem[];

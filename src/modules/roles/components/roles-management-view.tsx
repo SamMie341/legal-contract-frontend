@@ -16,8 +16,11 @@ import { useRolesList } from '../hooks/use-roles';
 import { RoleTable } from './role-table';
 import { RoleModal } from './role-modal';
 import { DeleteRoleDialog } from './delete-role-dialog';
+import { usePermissions } from '@/presentation/hooks';
+import { AccessDeniedView } from '@/presentation/components/ui/access-denied-view';
 
 export function RolesManagementView() {
+  const { isMounted, isAdmin } = usePermissions();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'SYSTEM' | 'CUSTOM'>('ALL');
 
@@ -74,6 +77,15 @@ export function RolesManagementView() {
   const handleOpenDelete = (role: RoleItem) => {
     setDeletingRole(role);
   };
+
+  if (isMounted && !isAdmin) {
+    return (
+      <AccessDeniedView
+        requiredDivisionName="ຜູ້ດູແລລະບົບ (ADMIN) ເທົ່ານັ້ນ"
+        moduleName="ຈັດການບົດບາດ & ສິດທິລະບົບ (Roles Management)"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -20,68 +20,23 @@ import { usersApi } from '../api/users.api';
 import { HrmEmployeeLookup } from '../types/user-management.types';
 import { useCreateUser } from '../hooks/use-users';
 import { useRolesList } from '@/modules/roles';
+import { usePermissions } from '@/presentation/hooks';
 import { ModulePermissionsMatrix } from './module-permissions-matrix';
 import { getErrorMessage } from '@core/errors';
+import {
+  DEFAULT_MODULE_PERMISSIONS,
+  buildMatrixForRole,
+  getAllowedBackendKeysForDivision,
+  getAllowedPillarsForDivision,
+} from '../utils/user-permissions.util';
 
 interface CreateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const DEFAULT_MODULE_PERMISSIONS: Record<SystemModuleKey, ModulePermission> = {
-  CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-};
-
-function buildMatrixForRole(roleItem?: RoleItem): Record<SystemModuleKey, ModulePermission> {
-  const result: Record<SystemModuleKey, ModulePermission> = {
-    CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  };
-
-  if (!roleItem) return result;
-
-  if (roleItem.name === 'ADMIN') {
-    (Object.keys(result) as SystemModuleKey[]).forEach((m) => {
-      result[m] = { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true };
-    });
-    return result;
-  }
-
-  if (roleItem.name === 'DEPARTMENT_HEAD') {
-    (Object.keys(result) as SystemModuleKey[]).forEach((m) => {
-      result[m] = { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true };
-    });
-    return result;
-  }
-
-  if (roleItem.permissions && Array.isArray(roleItem.permissions)) {
-    roleItem.permissions.forEach((p) => {
-      const perm: ModulePermission = {
-        canView: Boolean(p.canView),
-        canUpload: Boolean(p.canUpload),
-        canEdit: Boolean(p.canEdit),
-        canDelete: Boolean(p.canDelete),
-        canDownload: Boolean(p.canDownload),
-      };
-
-      if (p.module === 'LEGAL_AND_DISPUTE') {
-        result.LEGAL_DOCUMENTS = { ...perm };
-        result.LEGAL_CASES = { ...perm };
-      } else if (result[p.module as SystemModuleKey]) {
-        result[p.module as SystemModuleKey] = { ...perm };
-      }
-    });
-  }
-
-  return result;
-}
-
 export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
+  const { user: currentUser, isDivisionHead } = usePermissions();
   const [empCode, setEmpCode] = useState('');
   const [fullName, setFullName] = useState('');
   const [division, setDivision] = useState('');
@@ -97,27 +52,51 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
   const { data: roles = [], isLoading: isLoadingRoles } = useRolesList();
   const createUserMutation = useCreateUser();
 
+  const isHead =
+    isDivisionHead ||
+    currentUser?.role === 'DIVISION_HEAD' ||
+    currentUser?.role === UserRole.DIVISION_HEAD;
+
+  const availableRoles = React.useMemo(() => {
+    if (isHead) {
+      return roles.filter((r) => r.name !== 'ADMIN' && r.name !== 'DEPARTMENT_HEAD');
+    }
+    return roles;
+  }, [roles, isHead]);
+
+  const allowedPillars = React.useMemo(() => {
+    if (!isHead) return undefined;
+    return getAllowedPillarsForDivision(currentUser?.division);
+  }, [isHead, currentUser?.division]);
+
   // Initialize selected role when roles load or modal opens
   useEffect(() => {
-    if (isOpen && roles.length > 0) {
-      const defaultRole = roles.find((r) => r.name === 'VIEWER') || roles[0];
-      setSelectedRoleId(defaultRole.id);
-      setRole(defaultRole.name);
-      setMatrix(buildMatrixForRole(defaultRole));
-      setIsOverride(false);
+    if (isOpen) {
+      const activeDiv = isHead && currentUser?.division ? currentUser.division : division;
+      if (isHead && currentUser?.division) {
+        setDivision(currentUser.division);
+      }
+      if (availableRoles.length > 0) {
+        const defaultRole = availableRoles.find((r) => r.name === 'VIEWER') || availableRoles[0];
+        setSelectedRoleId(defaultRole.id);
+        setRole(defaultRole.name);
+        setMatrix(buildMatrixForRole(defaultRole, activeDiv));
+        setIsOverride(false);
+      }
     }
-  }, [isOpen, roles]);
+  }, [isOpen, availableRoles, isHead, currentUser?.division]);
 
   if (!isOpen) return null;
 
-  const currentRoleItem = roles.find((r) => r.id === selectedRoleId || r.name === role);
+  const currentRoleItem = availableRoles.find((r) => r.id === selectedRoleId || r.name === role);
 
   const handleRoleSelect = (roleId: string) => {
     setSelectedRoleId(roleId);
-    const matched = roles.find((r) => r.id === roleId);
+    const matched = availableRoles.find((r) => r.id === roleId);
     if (matched) {
       setRole(matched.name);
-      setMatrix(buildMatrixForRole(matched));
+      const activeDiv = isHead && currentUser?.division ? currentUser.division : division;
+      setMatrix(buildMatrixForRole(matched, activeDiv));
       setIsOverride(false);
     }
   };
@@ -125,7 +104,8 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
   const handleToggleOverride = (override: boolean) => {
     setIsOverride(override);
     if (!override && currentRoleItem) {
-      setMatrix(buildMatrixForRole(currentRoleItem));
+      const activeDiv = isHead && currentUser?.division ? currentUser.division : division;
+      setMatrix(buildMatrixForRole(currentRoleItem, activeDiv));
     }
   };
 
@@ -139,7 +119,13 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
     try {
       const data = await usersApi.lookupHrmEmployee(empCode.trim());
       setHrmResult(data);
-      if (data.division) setDivision(data.division);
+      if (data.division) {
+        const activeDiv = isHead && currentUser?.division ? currentUser.division : data.division;
+        setDivision(activeDiv);
+        if (!isOverride && currentRoleItem) {
+          setMatrix(buildMatrixForRole(currentRoleItem, activeDiv));
+        }
+      }
       if (data.fullName) setFullName(data.fullName);
     } catch (err) {
       setHrmError(getErrorMessage(err));
@@ -151,11 +137,21 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!empCode.trim()) return;
+    if (hrmResult && hrmResult.canAdd === false) return;
+
+    // If division head, only send keys within their own division to comply with backend division boundary
+    const allowedKeys: SystemModuleKey[] = isHead
+      ? getAllowedBackendKeysForDivision(currentUser?.division)
+      : ['CONTRACTS', 'POWER_CONTRACTS', 'LEGAL_DOCUMENTS', 'LEGAL_CASES'];
 
     const modulePermissionsPayload = isOverride
-      ? (Object.keys(matrix) as SystemModuleKey[]).map((mod) => ({
+      ? allowedKeys.map((mod) => ({
           module: mod,
-          ...matrix[mod],
+          canView: Boolean(matrix[mod]?.canView),
+          canUpload: Boolean(matrix[mod]?.canUpload),
+          canEdit: Boolean(matrix[mod]?.canEdit),
+          canDelete: Boolean(matrix[mod]?.canDelete),
+          canDownload: Boolean(matrix[mod]?.canDownload),
         }))
       : undefined;
 
@@ -166,12 +162,16 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
     const hasAnyDelete = Object.values(matrix).some((m) => m.canDelete);
     const hasAnyDownload = Object.values(matrix).some((m) => m.canDownload);
 
+    // Backend enum validation: only send `role` if it is one of the system roles
+    const isSystemRole = Object.values(UserRole).includes(role as UserRole);
+
     try {
       await createUserMutation.mutateAsync({
         employeeCode: empCode.trim(),
         fullName: fullName.trim() || undefined,
-        division: division || undefined,
-        role: role as UserRole,
+        division: isHead && currentUser?.division ? currentUser.division : division || undefined,
+        department: hrmResult?.department || currentUser?.department || undefined,
+        role: isSystemRole ? (role as UserRole) : undefined,
         roleId: selectedRoleId || undefined,
         canView: role === 'ADMIN' ? true : hasAnyView,
         canUpload: role === 'ADMIN' ? true : hasAnyUpload,
@@ -270,17 +270,45 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
 
             {/* HRM Search Result / Alert */}
             {hrmResult && (
-              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 space-y-1.5">
-                <div className="flex items-center gap-1.5 font-bold text-emerald-900">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>ພົບຂໍ້ມູນໃນ HRM: {hrmResult.fullName}</span>
+              <div
+                className={`p-3 rounded-lg border text-xs space-y-1.5 ${
+                  hrmResult.canAdd === false
+                    ? 'bg-red-50 border-red-200 text-red-800'
+                    : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                }`}
+              >
+                <div
+                  className={`flex items-center gap-1.5 font-bold ${
+                    hrmResult.canAdd === false ? 'text-red-900' : 'text-emerald-900'
+                  }`}
+                >
+                  {hrmResult.canAdd === false ? (
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  )}
+                  <span>
+                    {hrmResult.canAdd === false
+                      ? 'ພົບຂໍ້ມູນໃນ HRM (ຕ່າງພະແນກ / ບໍ່ສາມາດເພີ່ມໄດ້)'
+                      : `ພົບຂໍ້ມູນໃນ HRM: ${hrmResult.fullName}`}
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-emerald-700 pl-5.5">
+                <div
+                  className={`grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] pl-5.5 ${
+                    hrmResult.canAdd === false ? 'text-red-700' : 'text-emerald-700'
+                  }`}
+                >
                   <p>ຝ່າຍ: {hrmResult.department || '-'}</p>
                   <p>ພະແນກ: {hrmResult.division || '-'}</p>
                   <p>ຕຳແໜ່ງ: {hrmResult.position || '-'}</p>
                   <p>ອີເມວ: {hrmResult.email || '-'}</p>
                 </div>
+                {hrmResult.divisionMismatchWarning && (
+                  <div className="p-2 rounded bg-red-100/70 border border-red-200 text-red-900 font-semibold text-[11px] flex items-start gap-1.5 mt-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+                    <span>⚠️ {hrmResult.divisionMismatchWarning}</span>
+                  </div>
+                )}
                 {hrmResult.alreadyInSystem && (
                   <p className="text-[11px] font-bold text-amber-700 mt-1 pl-5.5">
                     ⚠️ ພະນັກງານທ່ານນີ້ມີບັນຊີໃນລະບົບແລ້ວ!
@@ -322,9 +350,18 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
               ສັງກັດພະແນກ (Division)
             </label>
             <select
-              value={division}
-              onChange={(e) => setDivision(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-border-line rounded-xl text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              value={isHead && currentUser?.division ? currentUser.division : division}
+              onChange={(e) => {
+                const newDiv = e.target.value;
+                setDivision(newDiv);
+                if (!isOverride && currentRoleItem) {
+                  setMatrix(buildMatrixForRole(currentRoleItem, newDiv));
+                }
+              }}
+              disabled={Boolean(isHead && currentUser?.division)}
+              className={`w-full px-3.5 py-2.5 bg-white border border-border-line rounded-xl text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                isHead && currentUser?.division ? 'bg-slate-100 cursor-not-allowed opacity-80' : ''
+              }`}
             >
               <option value="">-- ດຶງຕາມ HRM ຫຼື ບໍ່ລະບຸ --</option>
               {DIVISION_OPTIONS.map((opt) => (
@@ -333,6 +370,11 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
                 </option>
               ))}
             </select>
+            {isHead && currentUser?.division && (
+              <p className="text-[11px] text-teal-700 mt-1">
+                🔒 ລັອກສັງກັດພະແນກອັດຕະໂນມັດຕາມສິດຫົວໜ້າພະແນກ ({currentUser.division})
+              </p>
+            )}
           </div>
 
           {/* Section 2: Dynamic Role Selection (GET /api/roles) */}
@@ -353,7 +395,7 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
               onChange={(e) => handleRoleSelect(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-white border border-border-line rounded-xl text-xs font-semibold text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
-              {roles.map((r) => (
+              {availableRoles.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.title || r.name} ({r.name}) {r.isSystem ? '• [Role ລະບົບ]' : '• [Custom Role]'}
                 </option>
@@ -372,6 +414,7 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
             isOverride={isOverride}
             onToggleOverride={handleToggleOverride}
             roleTitle={currentRoleItem?.title || currentRoleItem?.name || role}
+            allowedPillars={allowedPillars}
           />
 
           {/* Modal Actions */}
@@ -386,7 +429,11 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
             </button>
             <button
               type="submit"
-              disabled={createUserMutation.isPending || !empCode.trim()}
+              disabled={
+                createUserMutation.isPending ||
+                !empCode.trim() ||
+                Boolean(hrmResult && hrmResult.canAdd === false)
+              }
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-xs transition-all disabled:opacity-50"
             >
               {createUserMutation.isPending ? (

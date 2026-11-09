@@ -42,7 +42,7 @@ export function ContractsListView() {
   // Dialog state
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(null);
 
-  const { canUpload } = usePermissions();
+  const { canUpload, isMounted } = usePermissions();
   const { data: contractTypes = [] } = useContractTypesDropdown();
 
   const { data, isLoading, isFetching, refetch } = useContractsList({
@@ -103,7 +103,7 @@ export function ContractsListView() {
             <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
           </button>
 
-          {canUpload && (
+          {isMounted && canUpload && (
             <Link
               href="/contracts/create"
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-sm transition-all"

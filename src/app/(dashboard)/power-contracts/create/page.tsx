@@ -11,7 +11,7 @@ import {
 import { toast } from 'sonner';
 
 export default function CreatePowerContractPage() {
-  const [formKey, setFormKey] = React.useState<number>(() => Date.now());
+  const [formKey, setFormKey] = React.useState<number>(0);
 
   React.useEffect(() => {
     setFormKey(Date.now());

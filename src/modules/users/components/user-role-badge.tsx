@@ -27,6 +27,14 @@ export function UserRoleBadge({ role, roleTitle }: UserRoleBadgeProps) {
           <span>{displayTitle || 'ຫົວໜ້າຝ່າຍ'}</span>
         </span>
       );
+    case UserRole.DIVISION_HEAD:
+    case 'DIVISION_HEAD':
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">
+          <Award className="w-3.5 h-3.5 text-teal-600" />
+          <span>{displayTitle || 'ຫົວໜ້າພະແນກ'}</span>
+        </span>
+      );
     case UserRole.MAIN_USER:
     case 'MAIN_USER':
       return (

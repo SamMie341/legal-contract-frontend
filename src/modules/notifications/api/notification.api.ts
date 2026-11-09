@@ -61,4 +61,18 @@ export const notificationApi = {
   async markAllPowerAsRead(): Promise<any> {
     return apiClient.patch('/power-notifications/read-all');
   },
+
+  /**
+   * ສັ່ງສະແກນສັນຍາທົ່ວໄປ ແລະ ສ້າງແຈ້ງເຕືອນທັນທີ (Trigger Expiry Check)
+   */
+  async triggerGeneralCheck(): Promise<any> {
+    return apiClient.post('/notifications/trigger-check');
+  },
+
+  /**
+   * ສັ່ງສະແກນສັນຍາຊື້-ຂາຍໄຟຟ້າ ແລະ ສ້າງແຈ້ງເຕືອນທັນທີ (Trigger Expiry Check)
+   */
+  async triggerPowerCheck(): Promise<any> {
+    return apiClient.post('/power-notifications/trigger-check');
+  },
 };

@@ -25,7 +25,7 @@ export function UserTable({
   onResetPassword,
   onDeleteUser,
 }: UserTableProps) {
-  const { user: currentUser } = usePermissions();
+  const { user: currentUser, isAdmin } = usePermissions();
   const toggleStatusMutation = useToggleUserStatus();
   const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
 
@@ -202,14 +202,16 @@ export function UserTable({
                         <Eye className="w-3.5 h-3.5" />
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => onResetPassword(u)}
-                        className="p-1.5 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 transition-all"
-                        title="ຣີເຊັດລະຫັດຜ່ານ (Reset Password)"
-                      >
-                        <KeyRound className="w-3.5 h-3.5" />
-                      </button>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => onResetPassword(u)}
+                          className="p-1.5 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 transition-all"
+                          title="ຣີເຊັດລະຫັດຜ່ານ (Reset Password - Admin Only)"
+                        >
+                          <KeyRound className="w-3.5 h-3.5" />
+                        </button>
+                      )}
 
                       <button
                         type="button"
@@ -221,14 +223,16 @@ export function UserTable({
                         <span>ແກ້ໄຂສິດທິ</span>
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => onDeleteUser(u)}
-                        className="p-1.5 rounded-lg border border-border-line bg-white hover:bg-red-50 text-red-600 transition-all"
-                        title="ລົບຜູ້ໃຊ້"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteUser(u)}
+                          className="p-1.5 rounded-lg border border-border-line bg-white hover:bg-red-50 text-red-600 transition-all"
+                          title="ລົບຜູ້ໃຊ້ (Admin Only)"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

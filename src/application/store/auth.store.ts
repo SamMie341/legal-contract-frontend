@@ -255,17 +255,57 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return false;
     }
 
-    // Check granular module permission matrix
-    if (user.permissionsByModule && user.permissionsByModule[module]) {
-      return Boolean(user.permissionsByModule[module][action]);
+    // Check granular module permission matrix (V2 Dynamic RBAC)
+    const upperMod = String(module).toUpperCase().replace(/-/g, '_');
+    if (user.permissionsByModule && Object.keys(user.permissionsByModule).length > 0) {
+      const directPerm = user.permissionsByModule[module] || user.permissionsByModule[upperMod];
+      if (directPerm) {
+        return Boolean(directPerm[action]);
+      }
+      // Legal and dispute pillar mapping fallback
+      if (upperMod === 'LEGAL_DOCUMENTS' || upperMod === 'LEGAL_CASES') {
+        const combined = user.permissionsByModule['LEGAL_AND_DISPUTE'] || user.permissionsByModule['legal-and-dispute'];
+        if (combined) {
+          return Boolean(combined[action]);
+        }
+      }
+      if (upperMod === 'LEGAL_AND_DISPUTE') {
+        const docPerm = user.permissionsByModule['LEGAL_DOCUMENTS'] || user.permissionsByModule['legal-documents'];
+        const casePerm = user.permissionsByModule['LEGAL_CASES'] || user.permissionsByModule['legal-cases'];
+        if (docPerm && docPerm[action]) return true;
+        if (casePerm && casePerm[action]) return true;
+      }
     }
 
-    // Check accessibleModules for canView
-    if (action === 'canView' && Array.isArray(user.accessibleModules)) {
-      return user.accessibleModules.includes(module);
+    // Check accessibleModules for canView (supports both 'contracts' and 'CONTRACTS')
+    if (action === 'canView' && Array.isArray(user.accessibleModules) && user.accessibleModules.length > 0) {
+      const normModule = String(module).toLowerCase().replace(/_/g, '-');
+      const hasAccess = user.accessibleModules.some((m) => {
+        const normItem = String(m).toLowerCase().replace(/_/g, '-');
+        if (normItem === normModule) return true;
+        if (normModule === 'legal-and-dispute' && (normItem === 'legal-documents' || normItem === 'legal-cases')) {
+          return true;
+        }
+        if ((normModule === 'legal-documents' || normModule === 'legal-cases') && normItem === 'legal-and-dispute') {
+          return true;
+        }
+        return false;
+      });
+      if (hasAccess) return true;
     }
 
-    // Fallback to legacy user-level permission
+    // If user has modern RBAC data (permissionsByModule or accessibleModules),
+    // lack of permission for this module strictly means access is DENIED.
+    const hasModernRBAC = Boolean(
+      (user.permissionsByModule && Object.keys(user.permissionsByModule).length > 0) ||
+      (Array.isArray(user.accessibleModules) && user.accessibleModules.length > 0)
+    );
+
+    if (hasModernRBAC) {
+      return false;
+    }
+
+    // Fallback to legacy user-level permission ONLY for legacy users without RBAC metadata
     return Boolean(user[action]);
   },
 

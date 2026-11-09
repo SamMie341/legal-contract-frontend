@@ -29,7 +29,7 @@ export function DocumentsListView() {
 
   const [documentToDelete, setDocumentToDelete] = useState<LegalDocument | null>(null);
 
-  const { canUpload } = usePermissions();
+  const { canUpload, isMounted } = usePermissions();
   const { data: departments = [] } = useDepartmentsList();
 
   const { data, isLoading, isFetching, refetch } = useDocumentsList({
@@ -91,7 +91,7 @@ export function DocumentsListView() {
             <span>ສະຖິຕິ Dashboard</span>
           </Link>
 
-          {canUpload && (
+          {isMounted && canUpload && (
             <Link
               href="/legal-documents/create"
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-sm transition-all"

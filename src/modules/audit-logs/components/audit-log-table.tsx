@@ -11,10 +11,16 @@ import {
   Building,
   Shield,
   Layers,
+  Paperclip,
+  Scale,
 } from 'lucide-react';
 import { AuditLog } from '@core/entities';
 import { formatDate } from '@/utils/formatters';
 import { AuditActionBadge } from './audit-action-badge';
+import {
+  resolveResourceInfo,
+  formatFileSize,
+} from '../utils/audit-log.util';
 
 interface AuditLogTableProps {
   logs: AuditLog[];
@@ -72,16 +78,7 @@ export function AuditLogTable({
           {/* Table Body */}
           <tbody className="divide-y divide-border-line">
             {logs.map((log) => {
-              const resourceTitle =
-                log.contract?.title ||
-                log.powerContract?.projectName ||
-                (log.newValues?.attemptedPath ? `Path: ${log.newValues.attemptedPath}` : null) ||
-                (log.newValues?.targetUserId ? `User ID: ${log.newValues.targetUserId.slice(0, 8)}...` : null) ||
-                (log.oldValues?.username ? `ບັນຊີ: @${log.oldValues.username}` : null) ||
-                '-';
-
-              const resourceNumber =
-                log.contract?.contractNumber || log.powerContract?.contractNumber;
+              const resource = resolveResourceInfo(log);
 
               return (
                 <tr
@@ -129,17 +126,27 @@ export function AuditLogTable({
                   </td>
 
                   {/* Column 4: Target Resource */}
-                  <td className="py-3.5 px-4 min-w-[180px]">
-                    <div className="min-w-0">
+                  <td className="py-3.5 px-4 min-w-[200px]">
+                    <div className="min-w-0 space-y-0.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                          {resource.typeLabel}
+                        </span>
+                        {resource.attachment && (
+                          <span className="text-[10px] text-blue-600 font-mono">
+                            {formatFileSize(resource.attachment.fileSize)}
+                          </span>
+                        )}
+                      </div>
                       <p
                         className="font-bold text-text-primary truncate max-w-xs"
-                        title={resourceTitle}
+                        title={resource.title}
                       >
-                        {resourceTitle}
+                        {resource.title}
                       </p>
-                      {resourceNumber && (
-                        <p className="text-[10px] text-emerald-700 font-mono font-semibold">
-                          ເລກທີ: {resourceNumber}
+                      {resource.codeOrNumber && (
+                        <p className="text-[10px] text-emerald-700 font-mono font-semibold truncate">
+                          {resource.codeOrNumber}
                         </p>
                       )}
                     </div>

@@ -67,13 +67,49 @@ function createHttpClient(): AxiosInstance {
 
       const normalized = normalizeError(error);
 
-      // Handle 403 PATH_DIVISION_MISMATCH (Path Tampering)
+      // Handle 403 PATH_DIVISION_MISMATCH (Path Tampering or Outdated Permissions)
       if (
         normalized.statusCode === 403 &&
         (normalized.code === 'PATH_DIVISION_MISMATCH' ||
           (error?.response?.data as any)?.code === 'PATH_DIVISION_MISMATCH') &&
         typeof window !== 'undefined'
       ) {
+        const originalRequest = error.config;
+        // Attempt seamless refresh once in case permissions were newly assigned in database
+        if (originalRequest && !originalRequest._retryPermissions) {
+          originalRequest._retryPermissions = true;
+          const refreshToken = TokenStorage.getRefreshToken();
+          if (refreshToken) {
+            try {
+              const refreshRes = await axios.post(`${ENV.API_URL}/auth/refresh`, {
+                refreshToken,
+              });
+              const data = refreshRes.data;
+              const accessToken = data?.accessToken || data?.data?.accessToken;
+              const newRefreshToken = data?.refreshToken || data?.data?.refreshToken;
+              const user = data?.user || data?.data?.user;
+
+              if (accessToken) {
+                TokenStorage.setAccessToken(accessToken);
+                if (newRefreshToken) TokenStorage.setRefreshToken(newRefreshToken);
+                if (user) TokenStorage.setUser(user);
+
+                window.dispatchEvent(
+                  new CustomEvent('auth:token-refreshed', {
+                    detail: { accessToken, refreshToken: newRefreshToken, user },
+                  })
+                );
+
+                originalRequest.headers = originalRequest.headers || {};
+                originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+                return instance(originalRequest);
+              }
+            } catch {
+              // If refresh fails, fall through to alert and redirect
+            }
+          }
+        }
+
         if (!window.location.pathname.includes('/dashboard')) {
           alert('ທ່ານບໍ່ມີສິດເຂົ້າເຖິງໂມດູນນີ້ (Unauthorized module access)');
           window.location.href = '/dashboard';
@@ -182,6 +218,8 @@ function createHttpClient(): AxiosInstance {
 
             // Resolve all queued requests with the fresh token
             processQueue(null, accessToken);
+
+            instance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
             // Retry the original request
             originalRequest.headers = originalRequest.headers || {};

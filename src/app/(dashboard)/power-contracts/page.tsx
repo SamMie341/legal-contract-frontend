@@ -40,7 +40,7 @@ function PowerContractsListContent() {
     }
   }, [searchParams]);
 
-  const { canUpload } = usePermissions();
+  const { canUpload, isMounted } = usePermissions();
 
   const { data, isLoading, isFetching, refetch } = usePowerContracts({
     page,
@@ -104,7 +104,7 @@ function PowerContractsListContent() {
             <span>ສະຖິຕິ Dashboard</span>
           </Link>
 
-          {canUpload && (
+          {isMounted && canUpload && (
             <Link
               href="/power-contracts/create"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs font-semibold shadow-xs transition-colors"

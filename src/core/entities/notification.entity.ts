@@ -27,6 +27,7 @@ export interface RawContractNotification {
     contractNumber?: string;
     title?: string;
     expirationDate?: string;
+    deletedAt?: string | null;
   };
 }
 
@@ -44,6 +45,7 @@ export interface RawPowerContractNotification {
     projectName?: string;
     contractType?: string;
     expirationDate?: string;
+    deletedAt?: string | null;
   };
 }
 

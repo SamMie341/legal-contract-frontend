@@ -24,6 +24,7 @@ interface ModulePermissionsMatrixProps {
   isOverride?: boolean;
   onToggleOverride?: (override: boolean) => void;
   roleTitle?: string;
+  allowedPillars?: PillarModuleKey[];
 }
 
 export type PillarModuleKey = 'CONTRACTS' | 'POWER_CONTRACTS' | 'LEGAL_AND_DISPUTE';
@@ -52,7 +53,7 @@ export const PILLAR_MODULES: PillarRowConfig[] = [
     key: 'LEGAL_AND_DISPUTE',
     label: '3. ນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ (Legal Affairs & Disputes)',
     divisionLabel: 'ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ (ນິຕິກຳ + ຄະດີຄວາມ)',
-    backendKeys: ['LEGAL_DOCUMENTS', 'LEGAL_CASES'],
+    backendKeys: ['LEGAL_AND_DISPUTE', 'LEGAL_DOCUMENTS', 'LEGAL_CASES'],
   },
 ];
 
@@ -71,11 +72,15 @@ export function ModulePermissionsMatrix({
   isOverride = false,
   onToggleOverride,
   roleTitle,
+  allowedPillars,
 }: ModulePermissionsMatrixProps) {
-  // Get values for a pillar row (for LEGAL_AND_DISPUTE, takes from LEGAL_DOCUMENTS)
+  // Get values for a pillar row (for LEGAL_AND_DISPUTE, takes from LEGAL_DOCUMENTS / LEGAL_CASES if needed)
   const getPillarRow = (pillar: PillarRowConfig): ModulePermission => {
-    const primaryKey = pillar.backendKeys[0];
-    return matrix[primaryKey] || {
+    if (matrix[pillar.key]) return matrix[pillar.key];
+    for (const k of pillar.backendKeys) {
+      if (matrix[k]) return matrix[k];
+    }
+    return {
       canView: false,
       canUpload: false,
       canEdit: false,
@@ -86,6 +91,10 @@ export function ModulePermissionsMatrix({
 
   const handleActionToggle = (pillar: PillarRowConfig, act: PermissionActionKey) => {
     if (disabled) return;
+    if (allowedPillars && !allowedPillars.includes(pillar.key)) return;
+    if (onToggleOverride && !isOverride) {
+      onToggleOverride(true);
+    }
 
     const current = getPillarRow(pillar);
     const nextValue = !current[act];
@@ -110,6 +119,10 @@ export function ModulePermissionsMatrix({
 
   const handleToggleRow = (pillar: PillarRowConfig) => {
     if (disabled) return;
+    if (allowedPillars && !allowedPillars.includes(pillar.key)) return;
+    if (onToggleOverride && !isOverride) {
+      onToggleOverride(true);
+    }
 
     const row = getPillarRow(pillar);
     const allActive = row.canView && row.canUpload && row.canEdit && row.canDelete && row.canDownload;
@@ -195,17 +208,29 @@ export function ModulePermissionsMatrix({
                   row.canDelete &&
                   row.canDownload;
 
+                const isPillarRestricted = Boolean(
+                  allowedPillars && !allowedPillars.includes(pillar.key)
+                );
+                const isRowDisabled = disabled || !isOverride || isPillarRestricted;
+
                 return (
                   <tr
                     key={pillar.key}
                     className={`transition-colors ${
                       row.canView ? 'bg-blue-50/25' : ''
-                    } ${disabled || !isOverride ? 'opacity-90' : 'hover:bg-slate-50/60'}`}
+                    } ${isRowDisabled ? 'opacity-70 bg-slate-50/40' : 'hover:bg-slate-50/60'}`}
                   >
                     <td className="py-3 px-3">
-                      <p className="font-bold text-text-primary text-xs">
-                        {pillar.label}
-                      </p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="font-bold text-text-primary text-xs">
+                          {pillar.label}
+                        </p>
+                        {isPillarRestricted && (
+                          <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                            🔒 ນອກຂອບເຂດພະແນກ
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[10px] text-text-muted">
                         {pillar.divisionLabel}
                       </p>
@@ -218,15 +243,15 @@ export function ModulePermissionsMatrix({
                         <td key={act.key} className="py-3 px-2 text-center">
                           <label
                             className={`inline-flex items-center justify-center p-1 rounded ${
-                              disabled || !isOverride
-                                ? 'cursor-default'
+                              isRowDisabled
+                                ? 'cursor-not-allowed opacity-50'
                                 : 'cursor-pointer hover:bg-slate-100'
                             }`}
                           >
                             <input
                               type="checkbox"
                               checked={isChecked}
-                              disabled={disabled || !isOverride}
+                              disabled={isRowDisabled}
                               onChange={() => handleActionToggle(pillar, act.key)}
                               className="w-4 h-4 rounded text-primary border-slate-300 focus:ring-primary/20 cursor-pointer disabled:cursor-not-allowed"
                             />
@@ -237,13 +262,17 @@ export function ModulePermissionsMatrix({
 
                     {!disabled && isOverride && (
                       <td className="py-3 px-2 text-center">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleRow(pillar)}
-                          className="text-[10px] px-2 py-0.5 rounded border border-border-line hover:bg-slate-100 font-semibold text-text-secondary transition-colors"
-                        >
-                          {allRow ? 'ຍົກເລີກ' : 'ທັງໝົດ'}
-                        </button>
+                        {!isPillarRestricted ? (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleRow(pillar)}
+                            className="text-[10px] px-2 py-0.5 rounded border border-border-line hover:bg-slate-100 font-semibold text-text-secondary transition-colors"
+                          >
+                            {allRow ? 'ຍົກເລີກ' : 'ທັງໝົດ'}
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-text-muted">-</span>
+                        )}
                       </td>
                     )}
                   </tr>
@@ -253,6 +282,15 @@ export function ModulePermissionsMatrix({
           </table>
         </div>
       </div>
+
+      {allowedPillars && allowedPillars.length > 0 && isOverride && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-teal-50 border border-teal-200/60 text-[11px] text-teal-800">
+          <Info className="w-3.5 h-3.5 shrink-0 text-teal-600" />
+          <span>
+            🔒 ໃນຖານະຫົວໜ້າພະແນກ ທ່ານສາມາດກຳນົດສິດທິ Override ໄດ້ສະເພາະໂມດູນທີ່ຂຶ້ນກັບພະແນກຂອງທ່ານເທົ່ານັ້ນ.
+          </span>
+        </div>
+      )}
 
       {isOverride ? (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200/60 text-[11px] text-amber-800">

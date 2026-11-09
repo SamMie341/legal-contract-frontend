@@ -66,9 +66,20 @@ export interface AuditLogPowerContract {
   contractNumber?: string;
 }
 
+export interface AuditLogTargetUser {
+  id?: string;
+  fullName?: string;
+  employeeCode?: string;
+  username?: string;
+  department?: string;
+  division?: string;
+  role?: string;
+}
+
 export interface AuditLog {
   id: string;
   userId: string;
+  targetUserId?: string | null;
   contractId?: string | null;
   powerContractId?: string | null;
   action: AuditAction | string;
@@ -78,6 +89,7 @@ export interface AuditLog {
   userAgent?: string | null;
   createdAt: string;
   user?: AuditLogUser | null;
+  targetUser?: AuditLogTargetUser | null;
   contract?: AuditLogContract | null;
   powerContract?: AuditLogPowerContract | null;
 }

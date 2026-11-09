@@ -19,6 +19,8 @@ import { DeleteUserDialog } from './delete-user-dialog';
 import { UserDetailModal } from './user-detail-modal';
 import { ResetPasswordModal } from './reset-password-modal';
 import { useRolesList } from '@/modules/roles';
+import { usePermissions } from '@/presentation/hooks';
+import { AccessDeniedView } from '@/presentation/components/ui/access-denied-view';
 
 export function UserManagementView() {
   const [page, setPage] = useState(1);
@@ -33,6 +35,8 @@ export function UserManagementView() {
   const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
+  const { isMounted, canManageUsers } = usePermissions();
+
   const { data: roles = [] } = useRolesList();
 
   const { data, isLoading, isFetching, refetch } = useUsersList({
@@ -45,6 +49,15 @@ export function UserManagementView() {
 
   const users = data?.data || [];
   const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
+
+  if (isMounted && !canManageUsers) {
+    return (
+      <AccessDeniedView
+        requiredDivisionName="ຜູ້ດູແລລະບົບ (Admin) ຫຼື ຫົວໜ້າພະແນກ (Division Head)"
+        moduleName="ຈັດການຜູ້ໃຊ້ງານ & ສິດທິລະບົບ (Users Management)"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -114,6 +127,7 @@ export function UserManagementView() {
             { label: 'ທັງໝົດ', val: undefined },
             { label: 'ADMIN', val: UserRole.ADMIN },
             { label: 'ຫົວໜ້າຝ່າຍ', val: UserRole.DEPARTMENT_HEAD },
+            { label: 'ຫົວໜ້າພະແນກ', val: UserRole.DIVISION_HEAD },
             { label: 'MAIN USER', val: UserRole.MAIN_USER },
             { label: 'EDITOR', val: UserRole.EDITOR },
             { label: 'VIEWER', val: UserRole.VIEWER },

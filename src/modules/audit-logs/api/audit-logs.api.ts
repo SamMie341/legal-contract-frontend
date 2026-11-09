@@ -22,6 +22,7 @@ export const auditLogsApi = {
       if (params.startDate) cleanParams.startDate = params.startDate;
       if (params.endDate) cleanParams.endDate = params.endDate;
       if (params.userId) cleanParams.userId = params.userId;
+      if (params.targetUserId) cleanParams.targetUserId = params.targetUserId;
       if (params.contractId) cleanParams.contractId = params.contractId;
       if (params.powerContractId) cleanParams.powerContractId = params.powerContractId;
     }

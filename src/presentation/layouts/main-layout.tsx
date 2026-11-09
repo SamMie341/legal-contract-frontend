@@ -19,6 +19,7 @@ function GuardedContent({ children }: { children: React.ReactNode }) {
   const {
     user,
     isAdmin,
+    canManageUsers,
     canAccessContracts,
     canAccessPowerContracts,
     canAccessLegalDocuments,
@@ -62,9 +63,13 @@ function GuardedContent({ children }: { children: React.ReactNode }) {
         moduleName: 'ສຳນວນຄະດີ ແລະ ຂໍ້ຂັດແຍ່ງ (Legal Cases)',
         requiredDivisionName: 'ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ, ຫົວໜ້າຝ່າຍ ຫຼື Admin',
       };
+    } else if (pathname.startsWith('/users') && !canManageUsers) {
+      accessDeniedConfig = {
+        moduleName: 'ຈັດການຜູ້ໃຊ້ງານ & ສິດທິ (User Management)',
+        requiredDivisionName: 'ຜູ້ດູແລລະບົບ (ADMIN) ຫຼື ຫົວໜ້າພະແນກ (DIVISION_HEAD)',
+      };
     } else if (
       (pathname.startsWith('/roles') ||
-        pathname.startsWith('/users') ||
         pathname.startsWith('/departments') ||
         pathname.startsWith('/audit-logs')) &&
       !isAdmin
@@ -197,7 +202,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
 
         {/* Scrollable Page Body */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative z-10">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative">
           <div className="max-w-7xl mx-auto">
             <Suspense
               fallback={

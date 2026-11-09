@@ -7,3 +7,4 @@ export * from './power-contract.entity';
 export * from './department.entity';
 export * from './audit-log.entity';
 export * from './notification.entity';
+export * from './support.entity';

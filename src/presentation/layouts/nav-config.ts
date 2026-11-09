@@ -10,6 +10,7 @@ import {
   FilePlus,
   ClockAlert,
   Zap,
+  LifeBuoy,
 } from 'lucide-react';
 import { UserPermissions, SystemModuleKey } from '@core/entities';
 import { DivisionAccessKey } from '@/presentation/hooks';
@@ -21,6 +22,7 @@ export interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   requiredPermission?: keyof UserPermissions;
   adminOnly?: boolean;
+  canManageUsersOnly?: boolean;
   badge?: string;
   badgeColor?: string;
 }
@@ -85,6 +87,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
     groupName: 'ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ',
     groupNameEn: 'Legal Affairs & Dispute Resolution Division',
     divisionKey: 'LEGAL_AND_DISPUTE',
+    systemModule: 'LEGAL_AND_DISPUTE',
     items: [
       {
         title: 'ສະຖິຕິນິຕິກຳ (Dashboard)',
@@ -149,7 +152,6 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     groupName: 'ການຕັ້ງຄ່າລະບົບ',
     groupNameEn: 'Administration',
-    adminOnly: true,
     items: [
       {
         title: 'ຈັດການບົດບາດ & ສິດ (Roles)',
@@ -163,7 +165,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         titleEn: 'User Management',
         href: '/users',
         icon: Users,
-        adminOnly: true,
+        canManageUsersOnly: true,
       },
       {
         title: 'ຈັດການຫ້ອງການ / ຝ່າຍ',
@@ -178,6 +180,18 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         href: '/audit-logs',
         icon: History,
         adminOnly: true,
+      },
+    ],
+  },
+  {
+    groupName: 'ສູນຊ່ວຍເຫຼືອ',
+    groupNameEn: 'Support & Help',
+    items: [
+      {
+        title: 'ຊ່ວຍເຫຼືອ & ແຈ້ງບັນຫາ',
+        titleEn: 'Help & Support',
+        href: '/support',
+        icon: LifeBuoy,
       },
     ],
   },

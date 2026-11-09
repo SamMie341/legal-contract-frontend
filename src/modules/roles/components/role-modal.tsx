@@ -52,7 +52,7 @@ const PILLAR_MODULES: PillarRowConfig[] = [
     key: 'LEGAL_AND_DISPUTE',
     label: '3. ນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ (Legal Affairs & Disputes)',
     divisionLabel: 'ພະແນກນິຕິກຳ ແລະ ແກ້ໄຂຂໍ້ຂັດແຍ່ງ (ນິຕິກຳ + ຄະດີຄວາມ)',
-    backendKeys: ['LEGAL_DOCUMENTS', 'LEGAL_CASES'],
+    backendKeys: ['LEGAL_AND_DISPUTE', 'LEGAL_DOCUMENTS', 'LEGAL_CASES'],
   },
 ];
 
@@ -67,6 +67,7 @@ const ACTIONS: { key: PermissionActionKey; label: string; desc: string }[] = [
 const DEFAULT_PERMISSIONS: Record<SystemModuleKey, ModulePermission> = {
   CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
   POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
+  LEGAL_AND_DISPUTE: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
   LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
   LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
 };
@@ -92,10 +93,7 @@ export function RoleModal({ isOpen, role, onClose }: RoleModalProps) {
 
       // Populate existing permissions into matrix
       const initial: Record<SystemModuleKey, ModulePermission> = {
-        CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-        POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-        LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-        LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
+        ...DEFAULT_PERMISSIONS,
       };
 
       if (role.permissions && Array.isArray(role.permissions)) {
@@ -118,10 +116,7 @@ export function RoleModal({ isOpen, role, onClose }: RoleModalProps) {
       setTitle('');
       setDescription('');
       setMatrix({
-        CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-        POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-        LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-        LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
+        ...DEFAULT_PERMISSIONS,
       });
     }
   }, [role, isOpen]);
@@ -175,6 +170,7 @@ export function RoleModal({ isOpen, role, onClose }: RoleModalProps) {
     setMatrix({
       CONTRACTS: { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true },
       POWER_CONTRACTS: { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true },
+      LEGAL_AND_DISPUTE: { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true },
       LEGAL_DOCUMENTS: { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true },
       LEGAL_CASES: { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true },
     });
@@ -184,27 +180,33 @@ export function RoleModal({ isOpen, role, onClose }: RoleModalProps) {
     setMatrix({
       CONTRACTS: { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true },
       POWER_CONTRACTS: { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true },
+      LEGAL_AND_DISPUTE: { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true },
       LEGAL_DOCUMENTS: { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true },
       LEGAL_CASES: { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true },
     });
   };
 
   const handleClearAll = () => {
-    setMatrix({
-      CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-      POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-      LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-      LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    });
+    setMatrix({ ...DEFAULT_PERMISSIONS });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const backendKeys: SystemModuleKey[] = ['CONTRACTS', 'POWER_CONTRACTS', 'LEGAL_DOCUMENTS', 'LEGAL_CASES'];
+    // Backend strictly validates module to be one of: CONTRACTS, POWER_CONTRACTS, LEGAL_DOCUMENTS, LEGAL_CASES
+    const backendKeys: SystemModuleKey[] = [
+      'CONTRACTS',
+      'POWER_CONTRACTS',
+      'LEGAL_DOCUMENTS',
+      'LEGAL_CASES',
+    ];
     const permissionsPayload = backendKeys.map((key) => ({
       module: key,
-      ...matrix[key],
+      canView: Boolean(matrix[key]?.canView),
+      canUpload: Boolean(matrix[key]?.canUpload),
+      canEdit: Boolean(matrix[key]?.canEdit),
+      canDelete: Boolean(matrix[key]?.canDelete),
+      canDownload: Boolean(matrix[key]?.canDownload),
     }));
 
     if (isEdit && role) {

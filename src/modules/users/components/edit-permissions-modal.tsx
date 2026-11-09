@@ -12,207 +12,21 @@ import {
 import { DIVISION_OPTIONS } from '@core/constants';
 import { useUpdateUser } from '../hooks/use-users';
 import { useRolesList } from '@/modules/roles';
+import { usePermissions } from '@/presentation/hooks';
 import { ModulePermissionsMatrix } from './module-permissions-matrix';
+import {
+  DEFAULT_MODULE_PERMISSIONS,
+  buildMatrixForRole,
+  resolveInitialMatrix,
+  getAllowedBackendKeysForDivision,
+  getAllowedPillarsForDivision,
+} from '../utils/user-permissions.util';
 
 interface EditPermissionsModalProps {
   user: User | null;
   roles?: RoleItem[];
   isOpen: boolean;
   onClose: () => void;
-}
-
-const DEFAULT_MODULE_PERMISSIONS: Record<SystemModuleKey, ModulePermission> = {
-  CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-};
-
-function normalizeModKey(moduleInput: any): SystemModuleKey | 'LEGAL_AND_DISPUTE' | null {
-  if (!moduleInput) return null;
-  const s = String(moduleInput).toUpperCase().replace(/-/g, '_').trim();
-  if (s === 'CONTRACTS' || s === 'CONTRACT_TYPES') return 'CONTRACTS';
-  if (s === 'POWER_CONTRACTS') return 'POWER_CONTRACTS';
-  if (s === 'LEGAL_DOCUMENTS') return 'LEGAL_DOCUMENTS';
-  if (s === 'LEGAL_CASES') return 'LEGAL_CASES';
-  if (s === 'LEGAL_AND_DISPUTE') return 'LEGAL_AND_DISPUTE';
-  return null;
-}
-
-function buildMatrixForRole(roleItem?: RoleItem): Record<SystemModuleKey, ModulePermission> {
-  const result: Record<SystemModuleKey, ModulePermission> = {
-    CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  };
-
-  if (!roleItem) return result;
-
-  if (roleItem.name === 'ADMIN') {
-    (Object.keys(result) as SystemModuleKey[]).forEach((m) => {
-      result[m] = { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true };
-    });
-    return result;
-  }
-
-  if (roleItem.name === 'DEPARTMENT_HEAD') {
-    (Object.keys(result) as SystemModuleKey[]).forEach((m) => {
-      result[m] = { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true };
-    });
-    return result;
-  }
-
-  if (roleItem.permissions && Array.isArray(roleItem.permissions)) {
-    roleItem.permissions.forEach((p) => {
-      const perm: ModulePermission = {
-        canView: Boolean(p.canView),
-        canUpload: Boolean(p.canUpload),
-        canEdit: Boolean(p.canEdit),
-        canDelete: Boolean(p.canDelete),
-        canDownload: Boolean(p.canDownload),
-      };
-
-      const normalized = normalizeModKey(p.module);
-      if (normalized === 'LEGAL_AND_DISPUTE') {
-        result.LEGAL_DOCUMENTS = { ...perm };
-        result.LEGAL_CASES = { ...perm };
-      } else if (normalized && result[normalized]) {
-        result[normalized] = { ...perm };
-      }
-    });
-  }
-
-  return result;
-}
-
-function resolveInitialMatrix(
-  user: User,
-  roles?: RoleItem[]
-): { matrix: Record<SystemModuleKey, ModulePermission>; isOverride: boolean; selectedRoleId: string } {
-  const result: Record<SystemModuleKey, ModulePermission> = {
-    CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    POWER_CONTRACTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    LEGAL_DOCUMENTS: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-    LEGAL_CASES: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false },
-  };
-
-  // Find matched role from roles array or user.roleRef
-  const matchedRole =
-    roles?.find((r) => r.id === user.roleId || r.name === user.role) ||
-    user.roleRef;
-
-  const roleId = user.roleId || matchedRole?.id || '';
-  const roleName = String(user.role || matchedRole?.name || 'VIEWER');
-  const isAdmin = roleName === 'ADMIN';
-  const isDeptHead = roleName === 'DEPARTMENT_HEAD';
-
-  // 1. If ADMIN: full access across all modules
-  if (isAdmin) {
-    (Object.keys(result) as SystemModuleKey[]).forEach((m) => {
-      result[m] = { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true };
-    });
-    return { matrix: result, isOverride: false, selectedRoleId: roleId };
-  }
-
-  // 2. If DEPARTMENT_HEAD: view & download across all modules
-  if (isDeptHead) {
-    (Object.keys(result) as SystemModuleKey[]).forEach((m) => {
-      result[m] = { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true };
-    });
-    return { matrix: result, isOverride: false, selectedRoleId: roleId };
-  }
-
-  // 3. Pre-fill base permissions from the Role Template
-  if (matchedRole?.permissions && Array.isArray(matchedRole.permissions)) {
-    matchedRole.permissions.forEach((p: any) => {
-      const perm: ModulePermission = {
-        canView: Boolean(p.canView),
-        canUpload: Boolean(p.canUpload),
-        canEdit: Boolean(p.canEdit),
-        canDelete: Boolean(p.canDelete),
-        canDownload: Boolean(p.canDownload),
-      };
-
-      const normalized = normalizeModKey(p.module);
-      if (normalized === 'LEGAL_AND_DISPUTE') {
-        result.LEGAL_DOCUMENTS = { ...perm };
-        result.LEGAL_CASES = { ...perm };
-      } else if (normalized && result[normalized]) {
-        result[normalized] = { ...perm };
-      }
-    });
-  }
-
-  // 4. Check for User-Specific Overrides (modulePermissions or permissionsByModule)
-  let hasOverride = false;
-
-  if (user.modulePermissions && Array.isArray(user.modulePermissions) && user.modulePermissions.length > 0) {
-    hasOverride = true;
-    user.modulePermissions.forEach((p) => {
-      const perm: ModulePermission = {
-        canView: Boolean(p.canView),
-        canUpload: Boolean(p.canUpload),
-        canEdit: Boolean(p.canEdit),
-        canDelete: Boolean(p.canDelete),
-        canDownload: Boolean(p.canDownload),
-      };
-
-      const normalized = normalizeModKey(p.module);
-      if (normalized === 'LEGAL_AND_DISPUTE') {
-        result.LEGAL_DOCUMENTS = { ...perm };
-        result.LEGAL_CASES = { ...perm };
-      } else if (normalized && result[normalized]) {
-        result[normalized] = { ...perm };
-      }
-    });
-  } else if (user.permissionsByModule && Object.keys(user.permissionsByModule).length > 0) {
-    hasOverride = true;
-    Object.entries(user.permissionsByModule).forEach(([mod, p]) => {
-      const perm: ModulePermission = {
-        canView: Boolean(p.canView),
-        canUpload: Boolean(p.canUpload),
-        canEdit: Boolean(p.canEdit),
-        canDelete: Boolean(p.canDelete),
-        canDownload: Boolean(p.canDownload),
-      };
-
-      const normalized = normalizeModKey(mod);
-      if (normalized === 'LEGAL_AND_DISPUTE') {
-        result.LEGAL_DOCUMENTS = { ...perm };
-        result.LEGAL_CASES = { ...perm };
-      } else if (normalized && result[normalized]) {
-        result[normalized] = { ...perm };
-      }
-    });
-  } else if (!matchedRole?.permissions || matchedRole.permissions.length === 0) {
-    // 5. Fallback for legacy users with global permission flags
-    const hasAnyGlobal = Boolean(user.canView || user.canUpload || user.canEdit || user.canDelete || user.canDownload);
-    if (hasAnyGlobal) {
-      const perm: ModulePermission = {
-        canView: Boolean(user.canView),
-        canUpload: Boolean(user.canUpload),
-        canEdit: Boolean(user.canEdit),
-        canDelete: Boolean(user.canDelete),
-        canDownload: Boolean(user.canDownload),
-      };
-
-      if (user.division?.includes('ສັນຍາທົ່ວໄປ')) {
-        result.CONTRACTS = { ...perm };
-      } else if (user.division?.includes('ຊື້-ຂາຍໄຟຟ້າ')) {
-        result.POWER_CONTRACTS = { ...perm };
-      } else if (user.division?.includes('ນິຕິກຳ')) {
-        result.LEGAL_DOCUMENTS = { ...perm };
-        result.LEGAL_CASES = { ...perm };
-      } else {
-        (Object.keys(result) as SystemModuleKey[]).forEach((m) => {
-          result[m] = { ...perm };
-        });
-      }
-    }
-  }
-
-  return { matrix: result, isOverride: hasOverride, selectedRoleId: roleId };
 }
 
 export function EditPermissionsModal({
@@ -228,18 +42,32 @@ export function EditPermissionsModal({
   const [isOverride, setIsOverride] = useState<boolean>(false);
   const [matrix, setMatrix] = useState<Record<SystemModuleKey, ModulePermission>>(DEFAULT_MODULE_PERMISSIONS);
 
+  const { user: currentUser, isDivisionHead } = usePermissions();
+  const isHead =
+    isDivisionHead ||
+    currentUser?.role === 'DIVISION_HEAD' ||
+    currentUser?.role === UserRole.DIVISION_HEAD;
+
   const { data: fetchedRoles = [], isLoading: isLoadingRoles } = useRolesList();
   const roles = initialRoles && initialRoles.length > 0 ? initialRoles : fetchedRoles;
   const updateUserMutation = useUpdateUser();
 
-  // Ensure user's role is in the options list
+  // Ensure user's role is in the options list (filtered for DIVISION_HEAD)
   const roleOptions = useMemo(() => {
-    const list = [...roles];
+    let list = [...roles];
     if (user?.roleRef && !list.some((r) => r.id === user.roleRef?.id || r.name === user.roleRef?.name)) {
       list.unshift(user.roleRef as RoleItem);
     }
+    if (isHead) {
+      list = list.filter((r) => r.name !== 'ADMIN' && r.name !== 'DEPARTMENT_HEAD');
+    }
     return list;
-  }, [roles, user]);
+  }, [roles, user, isHead]);
+
+  const allowedPillars = useMemo(() => {
+    if (!isHead) return undefined;
+    return getAllowedPillarsForDivision(currentUser?.division);
+  }, [isHead, currentUser?.division]);
 
   const initializedKeyRef = React.useRef<string | null>(null);
 
@@ -273,7 +101,7 @@ export function EditPermissionsModal({
     const matched = roleOptions.find((r) => r.id === roleId);
     if (matched) {
       setRole(matched.name);
-      setMatrix(buildMatrixForRole(matched));
+      setMatrix(buildMatrixForRole(matched, division));
       setIsOverride(false);
     }
   };
@@ -283,7 +111,7 @@ export function EditPermissionsModal({
     if (!override) {
       const currentRole = roleOptions.find((r) => r.id === selectedRoleId || r.name === role) || user?.roleRef;
       if (currentRole) {
-        setMatrix(buildMatrixForRole(currentRole as RoleItem));
+        setMatrix(buildMatrixForRole(currentRole as RoleItem, division));
       }
     }
   };
@@ -291,10 +119,19 @@ export function EditPermissionsModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // If division head, only send keys within their own division to comply with backend division boundary
+    const allowedKeys: SystemModuleKey[] = isHead
+      ? getAllowedBackendKeysForDivision(currentUser?.division)
+      : ['CONTRACTS', 'POWER_CONTRACTS', 'LEGAL_DOCUMENTS', 'LEGAL_CASES'];
+
     const modulePermissionsPayload = isOverride
-      ? (Object.keys(matrix) as SystemModuleKey[]).map((mod) => ({
+      ? allowedKeys.map((mod) => ({
           module: mod,
-          ...matrix[mod],
+          canView: Boolean(matrix[mod]?.canView),
+          canUpload: Boolean(matrix[mod]?.canUpload),
+          canEdit: Boolean(matrix[mod]?.canEdit),
+          canDelete: Boolean(matrix[mod]?.canDelete),
+          canDownload: Boolean(matrix[mod]?.canDownload),
         }))
       : [];
 
@@ -304,11 +141,14 @@ export function EditPermissionsModal({
     const hasAnyDelete = Object.values(matrix).some((m) => m.canDelete);
     const hasAnyDownload = Object.values(matrix).some((m) => m.canDownload);
 
+    // Backend enum validation: only send `role` if it is one of the system roles
+    const isSystemRole = Object.values(UserRole).includes(role as UserRole);
+
     try {
       await updateUserMutation.mutateAsync({
         id: user.id,
         payload: {
-          role: role as UserRole,
+          role: isSystemRole ? (role as UserRole) : undefined,
           roleId: selectedRoleId || undefined,
           isActive,
           division,
@@ -393,8 +233,20 @@ export function EditPermissionsModal({
             </label>
             <select
               value={division}
-              onChange={(e) => setDivision(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-border-line rounded-xl text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              onChange={(e) => {
+                const nextDiv = e.target.value;
+                setDivision(nextDiv);
+                if (!isOverride) {
+                  const currentRole = roleOptions.find((r) => r.id === selectedRoleId || r.name === role) || user?.roleRef;
+                  if (currentRole) {
+                    setMatrix(buildMatrixForRole(currentRole as RoleItem, nextDiv));
+                  }
+                }
+              }}
+              disabled={isHead}
+              className={`w-full px-3.5 py-2.5 bg-white border border-border-line rounded-xl text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                isHead ? 'bg-slate-100 cursor-not-allowed opacity-80' : ''
+              }`}
             >
               <option value="">-- ດຶງຕາມ HRM ຫຼື ບໍ່ລະບຸ --</option>
               {DIVISION_OPTIONS.map((opt) => (
@@ -403,6 +255,11 @@ export function EditPermissionsModal({
                 </option>
               ))}
             </select>
+            {isHead && (
+              <p className="text-[11px] text-teal-700 mt-1">
+                🔒 ຫົວໜ້າພະແນກບໍ່ສາມາດປ່ຽນສັງກັດພະແນກຂອງພະນັກງານໄດ້
+              </p>
+            )}
           </div>
 
           {/* Dynamic Role Selection */}
@@ -439,6 +296,7 @@ export function EditPermissionsModal({
             isOverride={isOverride}
             onToggleOverride={handleToggleOverride}
             roleTitle={currentRoleItem?.title || currentRoleItem?.name || role}
+            allowedPillars={allowedPillars}
           />
 
           {/* Actions */}

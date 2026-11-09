@@ -13,3 +13,4 @@ export * from './components/module-permissions-matrix';
 export * from './components/user-detail-modal';
 export * from './components/reset-password-modal';
 export * from './components/change-password-modal';
+export * from './utils/user-permissions.util';

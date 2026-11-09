@@ -19,7 +19,7 @@ import { DocumentDepartmentChart } from './document-department-chart';
 
 export function DocumentDashboardView() {
   const { data, isLoading, isError, error, refetch, isFetching } = useDocumentDashboard();
-  const { canUpload } = usePermissions();
+  const { canUpload, isMounted } = usePermissions();
 
   return (
     <div className="space-y-6">

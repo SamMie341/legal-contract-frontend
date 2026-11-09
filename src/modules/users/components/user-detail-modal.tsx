@@ -31,6 +31,7 @@ import { formatDate } from '@/utils/formatters';
 import { PILLAR_MODULES, PillarModuleKey } from './module-permissions-matrix';
 import { useToggleUserStatus } from '../hooks/use-users';
 import { usePermissions } from '@/presentation/hooks';
+import { resolveEffectiveUserPillars } from '../utils/user-permissions.util';
 
 interface UserDetailModalProps {
   user: User | null;
@@ -49,80 +50,6 @@ const ACTIONS: { key: PermissionActionKey; label: string; icon: React.ComponentT
   { key: 'canDownload', label: 'ດາວໂຫຼດ', icon: Download },
 ];
 
-/**
- * Compute the effective permissions for a user across the 3 core modules
- */
-function resolveUserEffectiveMatrix(
-  user: User,
-  roles?: RoleItem[]
-): Record<PillarModuleKey, { permissions: ModulePermission; isOverride: boolean }> {
-  const result: Record<PillarModuleKey, { permissions: ModulePermission; isOverride: boolean }> = {
-    CONTRACTS: { permissions: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false }, isOverride: false },
-    POWER_CONTRACTS: { permissions: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false }, isOverride: false },
-    LEGAL_AND_DISPUTE: { permissions: { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false }, isOverride: false },
-  };
-
-  const roleName = String(user.role || '');
-  const isAdmin = roleName === 'ADMIN';
-  const isDeptHead = roleName === 'DEPARTMENT_HEAD';
-
-  // Find role from roles list or roleRef
-  const matchedRole =
-    roles?.find((r) => r.id === user.roleId || r.name === user.role) ||
-    user.roleRef;
-
-  PILLAR_MODULES.forEach((pillar) => {
-    let p: ModulePermission = { canView: false, canUpload: false, canEdit: false, canDelete: false, canDownload: false };
-    let isOverride = false;
-
-    if (isAdmin) {
-      p = { canView: true, canUpload: true, canEdit: true, canDelete: true, canDownload: true };
-    } else if (isDeptHead) {
-      p = { canView: true, canUpload: false, canEdit: false, canDelete: false, canDownload: true };
-    } else {
-      pillar.backendKeys.forEach((key) => {
-        const override = user.modulePermissions?.find((o) => o.module === key);
-        if (override) {
-          isOverride = true;
-          p.canView = p.canView || Boolean(override.canView);
-          p.canUpload = p.canUpload || Boolean(override.canUpload);
-          p.canEdit = p.canEdit || Boolean(override.canEdit);
-          p.canDelete = p.canDelete || Boolean(override.canDelete);
-          p.canDownload = p.canDownload || Boolean(override.canDownload);
-        } else if (matchedRole?.permissions && Array.isArray(matchedRole.permissions)) {
-          const found = matchedRole.permissions.find((rp: any) => rp.module === key);
-          if (found) {
-            p.canView = p.canView || Boolean(found.canView);
-            p.canUpload = p.canUpload || Boolean(found.canUpload);
-            p.canEdit = p.canEdit || Boolean(found.canEdit);
-            p.canDelete = p.canDelete || Boolean(found.canDelete);
-            p.canDownload = p.canDownload || Boolean(found.canDownload);
-          }
-        } else if (user.permissionsByModule?.[key]) {
-          const modP = user.permissionsByModule[key];
-          p.canView = p.canView || Boolean(modP.canView);
-          p.canUpload = p.canUpload || Boolean(modP.canUpload);
-          p.canEdit = p.canEdit || Boolean(modP.canEdit);
-          p.canDelete = p.canDelete || Boolean(modP.canDelete);
-          p.canDownload = p.canDownload || Boolean(modP.canDownload);
-        } else {
-          p = {
-            canView: Boolean(user.canView),
-            canUpload: Boolean(user.canUpload),
-            canEdit: Boolean(user.canEdit),
-            canDelete: Boolean(user.canDelete),
-            canDownload: Boolean(user.canDownload),
-          };
-        }
-      });
-    }
-
-    result[pillar.key] = { permissions: p, isOverride };
-  });
-
-  return result;
-}
-
 export function UserDetailModal({
   user,
   roles,
@@ -131,23 +58,34 @@ export function UserDetailModal({
   onEditPermissions,
   onResetPassword,
 }: UserDetailModalProps) {
+  const { user: currentUser, isAdmin, isDivisionHead } = usePermissions();
+  const toggleStatusMutation = useToggleUserStatus();
+
   if (!isOpen || !user) return null;
 
-  const { user: currentUser } = usePermissions();
-  const toggleStatusMutation = useToggleUserStatus();
   const isSelf = currentUser?.id === user.id || currentUser?.employeeCode === user.employeeCode;
   const isToggling = toggleStatusMutation.isPending;
 
+  const isDifferentDivision = Boolean(
+    isDivisionHead &&
+      !isAdmin &&
+      currentUser?.division &&
+      user.division &&
+      !currentUser.division.includes(user.division) &&
+      !user.division.includes(currentUser.division)
+  );
+  const canEditUser = !isDifferentDivision;
+
   const isActive = user.isActive !== false;
   const roleTitle = user.roleTitle || user.roleRef?.title || user.role;
-  const effectiveMatrix = resolveUserEffectiveMatrix(user, roles);
+  const effectiveMatrix = resolveEffectiveUserPillars(user, roles);
 
   const matchedRole =
     roles?.find((r) => r.id === user.roleId || r.name === user.role) ||
     user.roleRef;
 
   const handleToggleStatus = () => {
-    if (isSelf || isToggling) return;
+    if (isSelf || isToggling || isDifferentDivision) return;
     const nextStatus = !isActive;
     toggleStatusMutation.mutate({
       id: user.id,
@@ -216,17 +154,19 @@ export function UserDetailModal({
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  disabled={isSelf || isToggling}
+                  disabled={isSelf || isToggling || isDifferentDivision}
                   onClick={handleToggleStatus}
                   title={
                     isSelf
                       ? 'ບໍ່ສາມາດລະງັບບັນຊີຂອງຕົນເອງໄດ້'
+                      : isDifferentDivision
+                      ? 'ຫົວໜ້າພະແນກບໍ່ສາມາດແກ້ໄຂຜູ້ໃຊ້ທີ່ຢູ່ຕ່າງພະແນກໄດ້'
                       : isActive
                       ? 'ກົດເພື່ອລະງັບການນຳໃຊ້ (Deactivate)'
                       : 'ກົດເພື່ອເປີດນຳໃຊ້ (Activate)'
                   }
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                    isSelf
+                    isSelf || isDifferentDivision
                       ? 'opacity-60 cursor-not-allowed bg-slate-100 text-slate-500 border-slate-200'
                       : isActive
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 cursor-pointer shadow-2xs'
@@ -412,15 +352,18 @@ export function UserDetailModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-border-line flex items-center justify-between bg-slate-50/50 shrink-0">
-          <div className="text-[11px] text-text-muted">
+        <div className="px-6 py-4 border-t border-border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50 shrink-0">
+          <div className="text-[11px] text-text-muted space-y-0.5">
             {user.createdAt && (
-              <span>ສ້າງເມື່ອ: {formatDate(user.createdAt)}</span>
+              <div>ສ້າງເມື່ອ: <span className="font-medium text-text-secondary">{formatDate(user.createdAt)}</span></div>
+            )}
+            {user.lastLoginAt && (
+              <div>ເຂົ້າສູ່ລະບົບຫຼ້າສຸດ: <span className="font-medium text-text-secondary">{formatDate(user.lastLoginAt)}</span></div>
             )}
           </div>
 
-          <div className="flex items-center gap-2.5">
-            {onResetPassword && (
+          <div className="flex items-center gap-2.5 self-end sm:self-auto">
+            {isAdmin && onResetPassword && (
               <button
                 type="button"
                 onClick={() => {
@@ -428,14 +371,14 @@ export function UserDetailModal({
                   onResetPassword(user);
                 }}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold shadow-xs transition-all"
-                title="ຣີເຊັດລະຫັດຜ່ານຂອງຜູ້ໃຊ້ນີ້"
+                title="ຣີເຊັດລະຫັດຜ່ານຂອງຜູ້ໃຊ້ນີ້ (Admin Only)"
               >
                 <KeyRound className="w-3.5 h-3.5 text-amber-600" />
                 <span>ຣີເຊັດລະຫັດຜ່ານ</span>
               </button>
             )}
 
-            {onEditPermissions && (
+            {onEditPermissions && canEditUser && (
               <button
                 type="button"
                 onClick={() => {

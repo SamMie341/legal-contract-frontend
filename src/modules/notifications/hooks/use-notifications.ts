@@ -46,6 +46,9 @@ export function useNotifications() {
 
   if (generalQuery.data?.data) {
     for (const item of generalQuery.data.data) {
+      // ບໍ່ສະແດງການແຈ້ງເຕືອນສຳລັບສັນຍາທີ່ຖືກລົບອອກແລ້ວ (Soft-deleted contracts)
+      if (!item.contract || item.contract.deletedAt) continue;
+
       normalizedNotifications.push({
         id: item.id,
         type: 'CONTRACT',
@@ -64,6 +67,9 @@ export function useNotifications() {
 
   if (powerQuery.data?.data) {
     for (const item of powerQuery.data.data) {
+      // ບໍ່ສະແດງການແຈ້ງເຕືອນສຳລັບສັນຍາໄຟຟ້າທີ່ຖືກລົບອອກແລ້ວ (Soft-deleted power contracts)
+      if (!item.powerContract || item.powerContract.deletedAt) continue;
+
       normalizedNotifications.push({
         id: item.id,
         type: 'POWER_CONTRACT',

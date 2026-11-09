@@ -16,9 +16,13 @@ import { AuditLogStatsCards } from './audit-log-stats-cards';
 import { AuditLogFilters } from './audit-log-filters';
 import { AuditLogTable } from './audit-log-table';
 import { AuditLogDetailModal } from './audit-log-detail-modal';
+import { resolveResourceInfo } from '../utils/audit-log.util';
 import { toast } from 'sonner';
+import { usePermissions } from '@/presentation/hooks';
+import { AccessDeniedView } from '@/presentation/components/ui/access-denied-view';
 
 export function AuditLogsView() {
+  const { isMounted, isAdmin } = usePermissions();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
   const [search, setSearch] = useState('');
@@ -85,15 +89,19 @@ export function AuditLogsView() {
     }
 
     const headers = ['ID', 'Date Time', 'Actor', 'Employee Code', 'Action', 'Target Resource', 'IP Address'];
-    const rows = logs.map((l) => [
-      l.id,
-      new Date(l.createdAt).toLocaleString('lo-LA'),
-      l.user?.fullName || 'N/A',
-      l.user?.employeeCode || 'N/A',
-      l.action,
-      l.contract?.title || l.powerContract?.projectName || l.newValues?.attemptedPath || '-',
-      l.ipAddress || '127.0.0.1',
-    ]);
+    const rows = logs.map((l) => {
+      const res = resolveResourceInfo(l);
+      const target = res.codeOrNumber ? `${res.title} (${res.codeOrNumber})` : res.title;
+      return [
+        l.id,
+        new Date(l.createdAt).toLocaleString('lo-LA'),
+        l.user?.fullName || 'N/A',
+        l.user?.employeeCode || 'N/A',
+        l.action,
+        target || '-',
+        l.ipAddress || '127.0.0.1',
+      ];
+    });
 
     const csvContent =
       'data:text/csv;charset=utf-8,\uFEFF' +
@@ -110,6 +118,15 @@ export function AuditLogsView() {
     document.body.removeChild(link);
     toast.success('ດາວໂຫຼດ CSV ສຳເລັດແລ້ວ');
   };
+
+  if (isMounted && !isAdmin) {
+    return (
+      <AccessDeniedView
+        requiredDivisionName="ຜູ້ດູແລລະບົບ (ADMIN) ເທົ່ານັ້ນ"
+        moduleName="ປະຫວັດການດຳເນີນງານ (Audit Logs)"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

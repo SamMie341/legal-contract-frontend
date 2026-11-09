@@ -1,6 +1,7 @@
 import React from 'react';
 import { User } from '@core/entities';
 import { ShieldCheck, Award, Sparkles } from 'lucide-react';
+import { getAccessiblePillarsForUser } from '../utils/user-permissions.util';
 
 interface PermissionPillsProps {
   user: User;
@@ -64,27 +65,8 @@ export function PermissionPills({ user, onViewDetail }: PermissionPillsProps) {
     );
   }
 
-  // Find modules user can view
-  const accessible: string[] = [];
-  if (user.permissionsByModule) {
-    Object.entries(user.permissionsByModule).forEach(([mod, p]) => {
-      if (p.canView && !accessible.includes(mod)) accessible.push(mod);
-    });
-  } else if (user.accessibleModules && Array.isArray(user.accessibleModules)) {
-    accessible.push(...user.accessibleModules);
-  } else if (user.roleRef?.permissions && Array.isArray(user.roleRef.permissions)) {
-    user.roleRef.permissions.forEach((p) => {
-      if (p.canView && !accessible.includes(p.module)) accessible.push(p.module);
-    });
-  } else {
-    // division check fallback
-    if (user.division?.includes('ສັນຍາທົ່ວໄປ')) accessible.push('CONTRACTS');
-    if (user.division?.includes('ຊື້-ຂາຍໄຟຟ້າ')) accessible.push('POWER_CONTRACTS');
-    if (user.division?.includes('ນິຕິກຳ')) {
-      accessible.push('LEGAL_DOCUMENTS');
-      accessible.push('LEGAL_CASES');
-    }
-  }
+  // Find modules user can view based on centralized permission resolution
+  const accessible = getAccessiblePillarsForUser(user);
 
   const hasOverride = Boolean(user.modulePermissions && user.modulePermissions.length > 0);
 

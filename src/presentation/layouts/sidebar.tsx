@@ -9,6 +9,7 @@ import { usePermissions } from '@/presentation/hooks';
 import { useAuthStore } from '@application/store';
 import { useTheme } from '@/presentation/providers';
 import { NAVIGATION_CONFIG } from './nav-config';
+import { useOpenTicketsCount } from '@/modules/support';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -19,10 +20,11 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
-  const { user, isAdmin, hasPermission, canAccessDivision, can } = usePermissions();
+  const { user, isAdmin, canManageUsers, hasPermission, canAccessDivision, can } = usePermissions();
   const { resolvedTheme } = useTheme();
   const isDark = isMounted ? resolvedTheme === 'dark' : false;
   const logout = useAuthStore((s) => s.logout);
+  const openTicketsCount = useOpenTicketsCount(Boolean(user));
 
   useEffect(() => {
     setIsMounted(true);
@@ -198,6 +200,7 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
 
             const visibleItems = group.items.filter((item) => {
               if (item.adminOnly && !isAdmin) return false;
+              if (item.canManageUsersOnly && !canManageUsers) return false;
               if (item.requiredPermission) {
                 if (group.systemModule) {
                   return can(group.systemModule, item.requiredPermission as any);
@@ -232,6 +235,20 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
 
                       const Icon = item.icon;
 
+                      // Dynamic badge for Support tickets with OPEN status (ລໍຖ້າກວດສອບ)
+                      const isSupportItem = item.href === '/support';
+                      const badgeText =
+                        isSupportItem && openTicketsCount > 0
+                          ? openTicketsCount > 99
+                            ? '99+'
+                            : String(openTicketsCount)
+                          : item.badge;
+
+                      const badgeColorClass =
+                        isSupportItem && openTicketsCount > 0
+                          ? 'bg-amber-500 text-white shadow-xs font-mono font-bold animate-pulse'
+                          : item.badgeColor || 'bg-blue-600 text-white';
+
                       return (
                         <Link
                           key={itemIdx}
@@ -260,12 +277,12 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
                             <span>{item.title}</span>
                           </div>
 
-                          {item.badge && (
+                          {badgeText && (
                             <span
-                              className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${item.badgeColor || 'bg-blue-600 text-white'
-                                }`}
+                              className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${badgeColorClass}`}
+                              title={isSupportItem ? `ມີ ${badgeText} ລາຍການລໍຖ້າກວດສອບ` : undefined}
                             >
-                              {item.badge}
+                              {badgeText}
                             </span>
                           )}
                         </Link>
@@ -297,8 +314,17 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
                         !pathname.includes('create'));
 
                     const Icon = item.icon;
-                    const tooltipText = item.badge
-                      ? `${item.title} (${item.badge})`
+
+                    const isSupportItem = item.href === '/support';
+                    const badgeText =
+                      isSupportItem && openTicketsCount > 0
+                        ? openTicketsCount > 99
+                          ? '99+'
+                          : String(openTicketsCount)
+                        : item.badge;
+
+                    const tooltipText = badgeText
+                      ? `${item.title} (${badgeText})`
                       : item.title;
 
                     return (
@@ -326,8 +352,16 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
                                   : 'text-slate-400'
                               }`}
                           />
-                          {item.badge && (
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#0b1120]" />
+                          {badgeText && (
+                            <span
+                              className={`absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full text-[9px] font-bold flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#0b1120] ${
+                                isSupportItem
+                                  ? 'bg-amber-500 text-white animate-pulse'
+                                  : 'bg-red-500 text-white'
+                              }`}
+                            >
+                              {badgeText}
+                            </span>
                           )}
                         </Link>
                       </div>

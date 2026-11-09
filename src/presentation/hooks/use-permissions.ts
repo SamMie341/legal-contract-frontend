@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@application/store';
 import {
@@ -33,85 +34,125 @@ function inferModuleFromPath(pathname: string): SystemModuleKey | undefined {
  * Custom React hook for dynamic RBAC and granular permission matrix (V2)
  */
 export function usePermissions(scopedModule?: SystemModuleKey) {
-  const user = useAuthStore((s) => s.user);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const rawUser = useAuthStore((s) => s.user);
+  const rawIsAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const storeCan = useAuthStore((s) => s.can);
   const storeHasModule = useAuthStore((s) => s.hasModule);
 
-  let currentPath = '';
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    currentPath = usePathname() || '';
-  } catch {
-    currentPath = '';
-  }
+  const pathname = usePathname();
+  const currentPath = pathname || '';
 
   const resolvedModule = scopedModule || inferModuleFromPath(currentPath);
+
+  // During SSR or before client mount, guard state to guarantee HTML matches
+  const user = isMounted ? rawUser : null;
+  const isAuthenticated = isMounted ? rawIsAuthenticated : false;
 
   const isAdmin = user?.role === UserRole.ADMIN || user?.role === 'ADMIN';
   const isDepartmentHead =
     user?.role === UserRole.DEPARTMENT_HEAD || user?.role === 'DEPARTMENT_HEAD';
+  const isDivisionHead =
+    user?.role === UserRole.DIVISION_HEAD || user?.role === 'DIVISION_HEAD';
+
+  const canManageUsers = Boolean(
+    isMounted &&
+      (isAdmin ||
+        isDivisionHead ||
+        user?.accessibleModules?.some((m) => String(m).toLowerCase().includes('user')))
+  );
 
   const can = (
     module: SystemModuleKey | string,
     action: PermissionActionKey = 'canView'
   ): boolean => {
+    if (!isMounted || !user) return false;
     return storeCan(module, action);
   };
 
   const hasModule = (module: SystemModuleKey | string): boolean => {
+    if (!isMounted || !user) return false;
     return storeHasModule(module);
   };
 
   // Button-level permissions: Automatically scoped to the current module
-  const canView = resolvedModule
-    ? can(resolvedModule, 'canView')
-    : isAdmin || Boolean(user?.canView);
+  const canView = isMounted
+    ? resolvedModule
+      ? can(resolvedModule, 'canView')
+      : isAdmin || Boolean(user?.canView)
+    : false;
 
-  const canUpload = resolvedModule
-    ? can(resolvedModule, 'canUpload')
-    : isAdmin || Boolean(user?.canUpload);
+  const canUpload = isMounted
+    ? resolvedModule
+      ? can(resolvedModule, 'canUpload')
+      : isAdmin || Boolean(user?.canUpload)
+    : false;
 
-  const canEdit = resolvedModule
-    ? can(resolvedModule, 'canEdit')
-    : isAdmin || Boolean(user?.canEdit);
+  const canEdit = isMounted
+    ? resolvedModule
+      ? can(resolvedModule, 'canEdit')
+      : isAdmin || Boolean(user?.canEdit)
+    : false;
 
-  const canDelete = resolvedModule
-    ? can(resolvedModule, 'canDelete')
-    : isAdmin || Boolean(user?.canDelete);
+  const canDelete = isMounted
+    ? resolvedModule
+      ? can(resolvedModule, 'canDelete')
+      : isAdmin || Boolean(user?.canDelete)
+    : false;
 
-  const canDownload = resolvedModule
-    ? can(resolvedModule, 'canDownload')
-    : isAdmin || Boolean(user?.canDownload);
+  const canDownload = isMounted
+    ? resolvedModule
+      ? can(resolvedModule, 'canDownload')
+      : isAdmin || Boolean(user?.canDownload)
+    : false;
+
+  // Has explicit module permissions defined in user profile (Dynamic RBAC V2)
+  const hasExplicitRBAC = Boolean(
+    user?.permissionsByModule && Object.keys(user.permissionsByModule).length > 0
+  );
 
   // Module / Division access permissions
-  const canAccessContracts =
-    isAdmin ||
-    isDepartmentHead ||
-    can('CONTRACTS', 'canView') ||
-    isGeneralContractDivision(user?.division);
+  const canAccessContracts = Boolean(
+    isMounted &&
+      (isAdmin ||
+        isDepartmentHead ||
+        can('CONTRACTS', 'canView') ||
+        (!hasExplicitRBAC && isGeneralContractDivision(user?.division)))
+  );
 
-  const canAccessPowerContracts =
-    isAdmin ||
-    isDepartmentHead ||
-    can('POWER_CONTRACTS', 'canView') ||
-    isPowerContractDivision(user?.division);
+  const canAccessPowerContracts = Boolean(
+    isMounted &&
+      (isAdmin ||
+        isDepartmentHead ||
+        can('POWER_CONTRACTS', 'canView') ||
+        (!hasExplicitRBAC && isPowerContractDivision(user?.division)))
+  );
 
-  const canAccessLegalDocuments =
-    isAdmin ||
-    isDepartmentHead ||
-    can('LEGAL_DOCUMENTS', 'canView') ||
-    isLegalAndDisputeDivision(user?.division);
+  const canAccessLegalDocuments = Boolean(
+    isMounted &&
+      (isAdmin ||
+        isDepartmentHead ||
+        can('LEGAL_DOCUMENTS', 'canView') ||
+        (!hasExplicitRBAC && isLegalAndDisputeDivision(user?.division)))
+  );
 
-  const canAccessLegalCases =
-    isAdmin ||
-    isDepartmentHead ||
-    can('LEGAL_CASES', 'canView') ||
-    isLegalAndDisputeDivision(user?.division);
+  const canAccessLegalCases = Boolean(
+    isMounted &&
+      (isAdmin ||
+        isDepartmentHead ||
+        can('LEGAL_CASES', 'canView') ||
+        (!hasExplicitRBAC && isLegalAndDisputeDivision(user?.division)))
+  );
 
   const canAccessLegalAndDispute = canAccessLegalDocuments || canAccessLegalCases;
 
   const canAccessDivision = (divisionKey?: DivisionAccessKey): boolean => {
+    if (!isMounted) return false;
     if (!divisionKey || isAdmin || isDepartmentHead) return true;
     switch (divisionKey) {
       case 'CONTRACTS':
@@ -130,26 +171,32 @@ export function usePermissions(scopedModule?: SystemModuleKey) {
   };
 
   const hasRole = (...roles: (UserRole | string)[]): boolean => {
-    if (!user) return false;
+    if (!isMounted || !user) return false;
     return roles.includes(user.role);
   };
 
   const hasPermission = (permission: keyof UserPermissions): boolean => {
-    if (!user) return false;
+    if (!isMounted || !user) return false;
     if (isAdmin) return true;
-    if (resolvedModule && permission in { canView: 1, canUpload: 1, canEdit: 1, canDelete: 1, canDownload: 1 }) {
+    if (
+      resolvedModule &&
+      permission in { canView: 1, canUpload: 1, canEdit: 1, canDelete: 1, canDownload: 1 }
+    ) {
       return can(resolvedModule, permission as PermissionActionKey);
     }
     return Boolean(user[permission]);
   };
 
   return {
+    isMounted,
     user,
     role: user?.role,
     roleTitle: user?.roleTitle || user?.role || 'VIEWER',
     isAuthenticated,
     isAdmin,
     isDepartmentHead,
+    isDivisionHead,
+    canManageUsers,
     can,
     hasModule,
     canView,

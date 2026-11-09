@@ -10,6 +10,9 @@ export interface HrmEmployeeLookup {
   email: string;
   phone: string;
   alreadyInSystem: boolean;
+  isSameDivision?: boolean;
+  canAdd?: boolean;
+  divisionMismatchWarning?: string | null;
 }
 
 export interface UserModulePermissionInput {

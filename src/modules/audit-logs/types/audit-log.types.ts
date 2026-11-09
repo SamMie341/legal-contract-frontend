@@ -9,6 +9,7 @@ export interface AuditLogQueryParams {
   startDate?: string;
   endDate?: string;
   userId?: string;
+  targetUserId?: string;
   contractId?: string;
   powerContractId?: string;
 }

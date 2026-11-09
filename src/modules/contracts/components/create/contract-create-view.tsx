@@ -8,14 +8,23 @@ import { ContractForm } from './contract-form';
 import { usePermissions } from '@/presentation/hooks/use-permissions';
 
 export function ContractCreateView() {
-  const { canUpload } = usePermissions();
+  const { canUpload, isMounted } = usePermissions();
   const { data: contractTypes = [], isLoading: isLoadingTypes } = useContractTypesDropdown();
-  const [formKey, setFormKey] = React.useState<number>(() => Date.now());
+  const [formKey, setFormKey] = React.useState<number>(0);
 
   React.useEffect(() => {
     // Ensure form is completely fresh each time user enters this page
     setFormKey(Date.now());
   }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="max-w-4xl mx-auto p-8 space-y-4 animate-pulse">
+        <div className="h-8 bg-slate-200/60 rounded-xl w-1/3" />
+        <div className="h-64 bg-slate-200/40 rounded-2xl" />
+      </div>
+    );
+  }
 
   if (!canUpload) {
     return (

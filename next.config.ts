@@ -1,16 +1,13 @@
 import type { NextConfig } from "next";
 
-const backendApiUrl =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ||
-  'https://likely-ecology-refused-letters.trycloudflare.com/api';
+const DEFAULT_API_URL = 'http://localhost:4000/api';
+const backendApiUrl = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL).replace(/\/+$/, '');
 
 const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     agentFeedback: true,
   },
-  cacheComponents: true,
-  partialPrefetching: true,
   reactCompiler: true,
   turbopack: {
     rules: {
@@ -21,12 +18,15 @@ const nextConfig: NextConfig = {
     },
   },
   async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${backendApiUrl}/:path*`,
-      },
-    ];
+    if (backendApiUrl.startsWith('http://') || backendApiUrl.startsWith('https://')) {
+      return [
+        {
+          source: '/api/:path*',
+          destination: `${backendApiUrl}/:path*`,
+        },
+      ];
+    }
+    return [];
   },
 };
 
